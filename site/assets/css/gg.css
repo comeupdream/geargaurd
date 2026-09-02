@@ -380,6 +380,41 @@ p { margin: 0 0 14px; }
  * the contract address is worse than no device. */
 @media (max-width: 1080px) { .pad { display: none; } }
 
+/* ---------- mind-blown Gary, lower-right ----------------------------------
+ * Fixed, so he rides along with the page; a link, so he is not just
+ * decoration. He is deliberately small — a mascot in a corner is a
+ * companion, and a companion at 260px is a billboard. The bubble carries a
+ * REAL 24h change and is hidden when there is none; on phones it goes and
+ * he shrinks, rather than eating a third of the screen. */
+.corner {
+  position: fixed; right: 16px; bottom: 12px; z-index: 40;
+  width: 128px; display: block;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .55));
+  transition: transform .18s ease;
+}
+.corner:hover { transform: translateY(-3px); }
+.corner canvas { width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; }
+.corner-bubble {
+  /* Level with the cloud, which sits ~30% down the (taller) canvas — the
+   * bubble should point at him, not at the empty sky above him. */
+  position: absolute; left: -10px; top: 36px; transform: translateX(-100%);
+  background: #f2f2f0; color: #14181a;
+  font: 700 12px/1 var(--gg-mono); letter-spacing: .04em;
+  padding: 8px 10px; border-radius: 9px; white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .35);
+}
+.corner-bubble.down { color: #b23a2b; }
+/* The tail, pointing at him. */
+.corner-bubble::after {
+  content: ""; position: absolute; right: -6px; top: 50%; margin-top: -5px;
+  border: 5px solid transparent; border-left-color: #f2f2f0; border-right: 0;
+}
+.corner-bubble[hidden] { display: none !important; }
+@media (max-width: 700px) {
+  .corner { width: 88px; right: 8px; bottom: 8px; }
+  .corner-bubble { display: none; }
+}
+
 /* Context majors under the hero — a horizontal rail, not a spec list. */
 .majors {
   display: flex; gap: 24px; flex-wrap: wrap; margin-top: 26px;

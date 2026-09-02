@@ -463,6 +463,15 @@
   </div>
 </section>
 
+<!-- MIND-BLOWN GARY, fixed in the lower-right corner. Procedurally animated
+     in corner.js: a particle burst off the crown that fires on a timer AND
+     the instant the live store reports a new quote. The bubble carries the
+     real 24h change or nothing. The whole thing is a link to the readout. -->
+<a class="corner" href="#charge" aria-label="Gary reacting to the 24-hour move — jump to the live readout">
+  <span class="corner-bubble" id="cornerBubble" hidden></span>
+  <canvas id="cornerGary" width="208" height="224" aria-hidden="true"></canvas>
+</a>
+
 <!-- ===================== footer ===================== -->
 <footer>
   <div class="wrap">
@@ -499,7 +508,11 @@
 <script src="assets/js/enhance.js" defer></script>
 <script src="assets/js/charts.js" defer></script>
 <script src="assets/js/gary.js" defer></script>
+<!-- pixel.js is the shared rasteriser; pad.js and corner.js both draw the
+     same character on it, so it must register GGPX before either runs. -->
+<script src="assets/js/pixel.js" defer></script>
 <script src="assets/js/pad.js" defer></script>
+<script src="assets/js/corner.js" defer></script>
 <!-- token.js last: it calls into GG.gauge (enhance) and GG.priceChart
      (charts), so both must have registered on window.GG first. defer keeps
      them in document order. -->
