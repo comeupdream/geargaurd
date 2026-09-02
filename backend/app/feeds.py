@@ -126,9 +126,95 @@ class TokenFeed(_Reader):
                 return {**base, "status": "dark", "detail": "Price feed unreachable."}
 
             payload = self._pick(pairs)
+
+            # SECOND SOURCE. DexScreener does not index every chain, and a
+            # brand-new one is exactly the case it lags on — Robinhood Chain
+            # among them. Without this the deck would sit on "no pool" forever
+            # while the token traded perfectly well, and no amount of frontend
+            # work would fix it. GeckoTerminal indexes the newer networks, so
+            # when the first source finds nothing we ask the second before
+            # concluding there is no market.
+            #
+            # Only "no_pool" falls through. A "thin" verdict is a real
+            # measurement and must stand — retrying it against another source
+            # until one agrees is shopping for the answer you wanted.
+            if payload.get("status") == "no_pool":
+                alt = self._geckoterminal(contract)
+                if alt is not None:
+                    payload = self._pick([alt])
+
             if payload.get("status") == "live":
                 self._cache = _Cached(payload=payload, fetched_at=time.time())
             return {**base, **payload, "stale_seconds": 0}
+
+    def _geckoterminal(self, contract: str) -> dict | None:
+        """Fetch the deepest pool from GeckoTerminal, shaped like a DexScreener
+        pair so ``_pick`` can judge it by exactly the same rules.
+
+        Returns None when there is nothing to report, so the caller keeps
+        DexScreener's original (honest) verdict rather than inventing one.
+        """
+        net = GT_NETWORKS.get(str(settings.token_chain or "").lower())
+        if not net:
+            return None
+        try:
+            resp = self._client.get(
+                f"{GECKOTERMINAL}/networks/{net}/tokens/{contract}/pools",
+                headers={"accept": "application/json;version=20230302"},
+            )
+            resp.raise_for_status()
+            rows = (resp.json() or {}).get("data") or []
+        except Exception as exc:  # noqa: BLE001 — a dead fallback is not an error
+            logger.warning("geckoterminal fallback failed: %s", exc)
+            return None
+        if not rows:
+            return None
+
+        def reserve(row: dict) -> float:
+            return _num(((row.get("attributes") or {}).get("reserve_in_usd"))) or 0.0
+
+        best = max(rows, key=reserve)
+        a = best.get("attributes") or {}
+        rel = best.get("relationships") or {}
+
+        # WHICH SIDE OF THE POOL IS OUR TOKEN? GeckoTerminal reports a base
+        # price and a quote price; taking base_token_price_usd blindly quotes
+        # whatever the *other* asset is whenever our token is the quote side —
+        # printing the price of WETH under our ticker. Read the relationship
+        # and pick the matching side, and if it cannot be established, return
+        # nothing rather than a coin-flip.
+        def side_id(key: str) -> str:
+            return str((((rel.get(key) or {}).get("data")) or {}).get("id") or "").lower()
+
+        want = (net + "_" + contract).lower()
+        if side_id("base_token") == want:
+            price = _num(a.get("base_token_price_usd"))
+        elif side_id("quote_token") == want:
+            price = _num(a.get("quote_token_price_usd"))
+        else:
+            logger.warning("geckoterminal pool %s matches neither side", a.get("address"))
+            return None
+        if not price or price <= 0:
+            return None
+
+        change = a.get("price_change_percentage") or {}
+        volume = a.get("volume_usd") or {}
+        txns = a.get("transactions") or {}
+        h24 = txns.get("h24") or {}
+        addr = a.get("address")
+        return {
+            "priceUsd": price,
+            "liquidity": {"usd": reserve(best)},
+            "volume": {"h24": volume.get("h24"), "h6": volume.get("h6"), "h1": volume.get("h1")},
+            "priceChange": {"h1": change.get("h1"), "h6": change.get("h6"), "h24": change.get("h24")},
+            "txns": {"h24": {"buys": h24.get("buys"), "sells": h24.get("sells")}},
+            "fdv": a.get("fdv_usd"),
+            "marketCap": a.get("market_cap_usd"),
+            "pairAddress": addr,
+            "dexId": str((((rel.get("dex") or {}).get("data")) or {}).get("id") or "geckoterminal"),
+            "chainId": settings.token_chain,
+            "url": "https://www.geckoterminal.com/" + net + "/pools/" + str(addr or ""),
+        }
 
     def _pick(self, pairs: list[dict]) -> dict:
         """Choose the deepest pool, and refuse to quote a shallow one."""

@@ -31,6 +31,29 @@ if (API && !/^https?:\/\//i.test(API)) API = 'https://' + API;
 var $ = function (id) { return document.getElementById(id); };
 var POLL_MS = 30000;
 
+/* Every call into another script goes through this. A partial deploy — one
+ * asset served stale, missing, or (with a catch-all rewrite in front of it)
+ * as an HTML page that `nosniff` then refuses — used to throw here and take
+ * the ENTIRE readout down with it: no price, no telemetry, no channel rows,
+ * because one chart helper was undefined. Now a missing helper costs you that
+ * one widget and nothing else, and says so in the console. */
+function safe(fnName) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  var GG = window.GG;
+  if (!GG || typeof GG[fnName] !== 'function') {
+    if (!safe.warned[fnName]) {
+      safe.warned[fnName] = true;
+      console.warn('[gg] GG.' + fnName + ' is unavailable — is assets/js/' +
+                   (fnName === 'gauge' ? 'enhance' : 'charts') + '.js being served? ' +
+                   'The rest of the readout still works.');
+    }
+    return;
+  }
+  try { return GG[fnName].apply(GG, args); }
+  catch (e) { console.warn('[gg] GG.' + fnName + ' threw:', e); }
+}
+safe.warned = {};
+
 var STATUS_TEXT = {
   unset: 'Contract not set',
   no_pool: 'No pool yet',
@@ -109,10 +132,10 @@ function paintToken(tok, limits) {
     setText('tokPrice', '--', 'v dim');
     setText('tok24h', '--', 'v dim');
     setText('tokStatus', tok.detail || STATUS_TEXT[status] || 'No quote available.');
-    window.GG.gauge($('gDepth'), null, '--', '#8fa099');
-    window.GG.gauge($('gMom'), null, '--', '#8fa099');
+    safe('gauge', $('gDepth'), null, '--', '#8fa099');
+    safe('gauge', $('gMom'), null, '--', '#8fa099');
     paintChannels(null);
-    window.GG.flowMeter($('flowMeter'), null);
+    safe('flowMeter', $('flowMeter'), null);
     paintTelemetry(tok, false);
     return;
   }
@@ -131,15 +154,15 @@ function paintToken(tok, limits) {
   /* Gauge ceilings are DISPLAY scales, declared here and stated on the label.
    * A gauge whose maximum is invisible tells you nothing about the value. */
   var depthMax = 250000;
-  window.GG.gauge($('gDepth'), (tok.liquidity_usd || 0) / depthMax, compact(tok.liquidity_usd), '#3fd98a');
+  safe('gauge', $('gDepth'), (tok.liquidity_usd || 0) / depthMax, compact(tok.liquidity_usd), '#3fd98a');
   /* Momentum is bidirectional, so it is mapped from -25%..+25% onto the dial
    * with the centre as flat, and the arc takes the sign's colour. */
   var m = typeof ch === 'number' ? ch : 0;
-  window.GG.gauge($('gMom'), (Math.max(-25, Math.min(25, m)) + 25) / 50, pct(ch),
-                  m < 0 ? '#ff5a4d' : '#ffd400');
+  safe('gauge', $('gMom'), (Math.max(-25, Math.min(25, m)) + 25) / 50, pct(ch),
+       m < 0 ? '#ff5a4d' : '#ffd400');
 
   paintChannels(tok);
-  window.GG.flowMeter($('flowMeter'), tok.txns_24h);
+  safe('flowMeter', $('flowMeter'), tok.txns_24h);
   paintTelemetry(tok, live);
 
   var floorEl = $('tokFloor');
@@ -228,8 +251,8 @@ function paintHistory(h) {
   if (!host) return;
   lastHistory = h;
   var live = h && h.status === 'live';
-  window.GG.priceChart(host, live ? h.candles : null, (h && h.range) || range,
-                       { detail: h && h.detail });
+  safe('priceChart', host, live ? h.candles : null, (h && h.range) || range,
+       { detail: h && h.detail });
   setText('chartSrc', live
     ? (h.label + ' · ' + h.candles.length + ' candles · ' + (h.source || 'upstream') +
        ', from the same pool as the price above' +

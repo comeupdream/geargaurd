@@ -160,12 +160,33 @@ services:
       - path: /*
         name: X-Content-Type-Options
         value: nosniff
+      # CACHING. Asset filenames here are stable and unhashed (gg.css,
+      # token.js, charts.js), so a CDN or browser that caches them by name
+      # keeps serving the OLD file after a deploy — the site looks completely
+      # unchanged and the new script never runs. That failure is invisible:
+      # the deploy succeeds, the logs are clean, and the page is simply stale.
+      #
+      # `no-cache` does not mean "do not cache" — it means revalidate before
+      # reuse, so a 304 still costs almost nothing while a real change lands
+      # immediately. Correctness over a few bytes; introduce content hashes in
+      # the filenames first if this ever needs to be `immutable`.
+      - path: /*
+        name: Cache-Control
+        value: "no-cache, must-revalidate"
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
-    routes:
-      # Single page — anything unknown lands on it rather than a 404 from the
-      # static host.
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    # NO CATCH-ALL REWRITE. There used to be `/* -> /index.html` here, copied
+    # from the standard single-page-app recipe. This site is not an SPA — it
+    # has no client-side router and exactly one page, so the rule bought
+    # nothing and could only do harm:
+    #
+    #   a request for /assets/js/charts.js that misses for ANY reason (not yet
+    #   deployed, renamed, a typo) stops being a clean 404 and becomes a
+    #   200 serving index.html. The browser gets `text/html` where it asked
+    #   for a script or a stylesheet, `X-Content-Type-Options: nosniff`
+    #   refuses it, and the page renders unstyled and inert with nothing in
+    #   the logs to explain why. A missing file should look missing.
+    #
+    # If a genuine SPA route is ever added here, scope the rewrite to it
+    # (`/app/*`), never to `/*`.

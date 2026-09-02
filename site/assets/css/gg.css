@@ -114,11 +114,21 @@ p { margin: 0 0 14px; }
  * wear them without extra markup. */
 .bracketed { position: relative; }
 .bracketed::before, .bracketed::after {
-  content: ""; position: absolute; width: 15px; height: 15px; pointer-events: none;
-  border: 1.5px solid var(--gg-alloy); opacity: .5;
+  content: ""; position: absolute; width: 26px; height: 26px; pointer-events: none;
+  border: 2px solid var(--gg-alloy); opacity: .85; z-index: 3;
 }
-.bracketed::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; border-radius: 12px 0 0 0; }
-.bracketed::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; border-radius: 0 0 12px 0; }
+.bracketed::before { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }
+.bracketed::after { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }
+/* A .card already speaks this lineage through its chamfer and edge bar, and
+ * its ::before slot is spent on that bar — so adding brackets there yields a
+ * single orphaned corner that reads as a rendering artefact. Cards keep the
+ * chamfer; only full-bleed surfaces (the rig) wear brackets. */
+.card.bracketed::before {
+  content: ""; left: 0; top: 0; bottom: 0; width: 2px; height: auto; border: 0;
+  background: linear-gradient(180deg, var(--gg-alloy), rgba(110, 168, 216, .05) 70%, transparent);
+  opacity: 1;
+}
+.card.bracketed::after { content: none; }
 
 /* The JP micro-subtitle. Both lineages independently reached for this (XAT's
  * parts-box subtitles, MangoMatrix's コードでビート), which is why it earns a
@@ -250,10 +260,21 @@ p { margin: 0 0 14px; }
 
 /* ---------- hero ----------------------------------------------------------- */
 .hero { position: relative; padding: 84px 0 54px; overflow: hidden; }
+/* Hero backdrop: the two colour washes, plus a HUD survey grid that fades out
+ * toward the copy. The grid is Mnemonic's plane — it makes the hero read as a
+ * display surface rather than a dark div, and it is the cue that carries at a
+ * glance from across the room. */
 .hero::before {
-  content: ""; position: absolute; inset: -40% 0 auto 0; height: 90%;
-  background: radial-gradient(60% 60% at 50% 0%, rgba(255, 212, 0, .07) 0%, transparent 62%),
-              radial-gradient(70% 50% at 20% 20%, rgba(63, 217, 138, .05) 0%, transparent 60%);
+  content: ""; position: absolute; inset: -40% 0 auto 0; height: 130%;
+  background:
+    radial-gradient(60% 60% at 50% 0%, rgba(255, 212, 0, .07) 0%, transparent 62%),
+    radial-gradient(70% 50% at 20% 20%, rgba(63, 217, 138, .05) 0%, transparent 60%),
+    repeating-linear-gradient(90deg, rgba(110, 168, 216, .07) 0 1px, transparent 1px 68px),
+    repeating-linear-gradient(180deg, rgba(110, 168, 216, .07) 0 1px, transparent 1px 68px);
+  /* The grid must not compete with the wordmark, so it is masked away from
+   * the middle of the hero where the copy lives. */
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(120% 90% at 50% 0%, #000 0%, transparent 72%);
   pointer-events: none;
 }
 .hero .wrap { position: relative; }
@@ -412,9 +433,25 @@ section .wrap { position: relative; }
 .grid { display: grid; gap: 14px; }
 .g3 { grid-template-columns: repeat(3, 1fr); }
 .g2 { grid-template-columns: repeat(2, 1fr); }
+/* Mnemonic's CLIPPED PANE: the top-right corner is cut on a 45° chamfer and a
+ * gradient edge bar runs down the left side. This is the single most legible
+ * cue of that lineage — the first pass expressed it only as faint corner
+ * brackets, which is a cue you have to be told to look for. A pane that is
+ * visibly not a rectangle is one you cannot miss.
+ *
+ * clip-path replaces border-radius here: the two do not compose, and a
+ * rounded rect wins visually, cancelling the chamfer. */
 .card {
   background: var(--gg-panel); border: 1px solid var(--gg-line);
-  border-radius: 12px; padding: 18px 18px 16px; position: relative; overflow: hidden;
+  border-radius: 0; padding: 18px 18px 16px 22px; position: relative; overflow: hidden;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+}
+/* The edge bar. Alloy at the top fading out downward — light entering the
+ * pane from one side, not a decorative stripe. */
+.card::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(180deg, var(--gg-alloy), rgba(110, 168, 216, .05) 70%, transparent);
+  z-index: 1;
 }
 .card > .teeth { position: absolute; inset: 0 0 auto 0; height: 3px; opacity: .55; }
 .card h3 {
