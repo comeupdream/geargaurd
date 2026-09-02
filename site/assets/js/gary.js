@@ -2,7 +2,7 @@
  * gary.js — THE RIG: a wireframe adventure SUV drawn in pure math.
  *
  * Lineage: XAT Racing's "Glass Garage" canvas-CAD engine — a procedural
- * wireframe car with drag-to-rotate, scroll-to-field-strip, isolate, and a
+ * wireframe car with drag-to-rotate, slider-driven field-strip, isolate, and a
  * tap-a-part dossier. The ENGINE is ported faithfully (projection, depth
  * fade, hit-testing, explode, the axis gizmo); the SUBJECT is new: where the
  * original drew a long-hood fastback coupe, this draws a three-row electric
@@ -33,7 +33,6 @@
 var cv = document.getElementById('rig-wire');
 if (!cv) return;
 var ctx = cv.getContext('2d');
-var stage = document.getElementById('rigStage');
 var esc = function (s) {
   return String(s).replace(/[&<>"']/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -494,24 +493,24 @@ var zi = $('rigZi'), zo = $('rigZo');
 if (zi) zi.addEventListener('click', function () { setZoom(zoom * 1.2); });
 if (zo) zo.addEventListener('click', function () { setZoom(zoom * 0.83); });
 
+/* THE FIELD-STRIP IS DRIVEN BY THE SLIDER ALONE.
+ *
+ * It used to be driven by page scroll, with the section stretched to 220vh to
+ * give that scroll somewhere to happen. Two things were wrong with that: the
+ * model came apart whether you wanted it to or not, purely as a side effect
+ * of reading past the section, and the section became a screen and a half of
+ * scrolling that existed only to feed an animation.
+ *
+ * Now the control is the control. The slider carries a glow until it is
+ * used — an affordance, not decoration, which is exactly why it stops the
+ * moment the visitor has moved it and learned what it does. */
 var stripEl = $('rigStrip');
-var stripPinned = false;
-if (stripEl) stripEl.addEventListener('input', function () { stripT = +stripEl.value / 100; stripPinned = true; });
-var unpin = function () { stripPinned = false; };
-addEventListener('wheel', unpin, { passive: true });
-addEventListener('touchmove', unpin, { passive: true });
-function onScroll() {
-  /* Scroll drives the field-strip — until the visitor grabs the slider, at
-   * which point their choice wins until they scroll again. */
-  if (stripPinned || !stage) return;
-  var r = stage.getBoundingClientRect(), range = r.height - window.innerHeight;
-  if (range > 0) {
-    var p = Math.max(0, Math.min(1, -r.top / range));
-    stripT = p;
-    if (stripEl) stripEl.value = Math.round(p * 100);
-  }
+if (stripEl) {
+  stripEl.addEventListener('input', function () {
+    stripT = +stripEl.value / 100;
+    stripEl.classList.add('used');
+  });
 }
-addEventListener('scroll', onScroll, { passive: true });
 
 /* ---- panel ---- */
 var buildEl = $('rigGroups');
@@ -717,5 +716,5 @@ function frame(t) {
   }
 }
 
-resize(); onScroll(); requestAnimationFrame(frame);
+resize(); requestAnimationFrame(frame);
 })();

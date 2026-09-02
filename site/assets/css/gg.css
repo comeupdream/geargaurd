@@ -129,19 +129,8 @@ p { margin: 0 0 14px; }
 }
 .card.bracketed::after { content: none; }
 
-/* The hero panels are the same component, so they wear the same shape. */
-.panel-lite {
-  border-radius: 0;
-  padding: 26px 22px 18px 30px;
-  clip-path: polygon(
-    0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%,
-    0 66px, 9px 66px, 9px 38px, 0 38px
-  );
-}
-.panel-lite::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
-  background: linear-gradient(180deg, var(--gg-alloy), rgba(110, 168, 216, .05) 70%, transparent);
-}
+/* Hero panels share the SD-card shape — see the SD-card pane block below,
+ * which styles `.card, .panel-lite` together so the two can never drift. */
 
 /* The JP micro-subtitle. Both lineages independently reached for this (XAT's
  * parts-box subtitles, MangoMatrix's コードでビート), which is why it earns a
@@ -451,55 +440,110 @@ section .wrap { position: relative; }
 .g3 { grid-template-columns: repeat(3, 1fr); }
 .g2 { grid-template-columns: repeat(2, 1fr); }
 /* ---------- the SD-card pane ----------------------------------------------
- * Cards are shaped as memory cards: the clipped corner, the write-protect
- * notch cut into the left edge, and a contact strip along the top. It reads
- * as a component you could physically pull out of a slot, which suits a deck
- * whose whole fiction is instrumentation — and it carries the Mnemonic
- * clipped-pane cue at the same time, so the two ideas cost one shape.
+ * Every content pane on this deck is drawn as a full-size SD card. Not a
+ * rectangle with a corner missing — an actual card: the chamfered corner, the
+ * write-protect notch, gold contact fingers in their recessed slots, a moulded
+ * plastic bevel, and a silkscreened $GARY chip stamp.
  *
- * Three things make it read as a card rather than a rectangle with a corner
- * missing, and it needs all three:
- *   1. the chamfer, big enough to be deliberate (22px, not 8px)
- *   2. the notch on the left edge — this is the part people actually
- *      recognise, and without it the chamfer alone just looks clipped
- *   3. the contact fingers along the top
+ * THE GEOMETRY IS FIXED, NOT PROPORTIONAL TO THE PANE. Every value below is an
+ * absolute pixel size held in a custom property, so a wide card and a narrow
+ * one carry an IDENTICAL notch, chamfer and contact block. That is how real
+ * cards work — the notch is the same size whatever is printed on the label —
+ * and it is what makes a grid of different-sized panes read as the same
+ * physical object rather than as one shape scaled to several sizes. Scaling
+ * these with the pane is the single change that would break the effect.
  *
- * clip-path replaces border-radius: the two do not compose, and a rounded
- * rect wins visually, cancelling the chamfer. The notch is cut in the same
- * path, walking back UP the left edge after the bottom-left corner. */
-.card {
-  background: var(--gg-panel); border: 1px solid var(--gg-line);
-  border-radius: 0; padding: 26px 22px 20px 30px; position: relative; overflow: hidden;
+ * clip-path replaces border-radius: the two do not compose, and a rounded rect
+ * wins visually, cancelling the chamfer. The notch is cut in the same path,
+ * walking back UP the left edge after the bottom-left corner. A border is not
+ * used because clip-path cuts it at the chamfer and leaves that edge unstroked
+ * — the moulded bevel below does the job and follows the shape. */
+:root {
+  --sd-chamfer: 30px;      /* the cut corner */
+  --sd-notch-y: 64px;      /* write-protect slider: top edge */
+  --sd-notch-h: 30px;      /*                       height   */
+  --sd-notch-d: 10px;      /*                       depth    */
+  --sd-contact-h: 21px;    /* the gold contact block */
+  /* Brass, deliberately NOT the deck's compass yellow. Contacts are a
+   * material; compass is the one go-colour and spending it here would cost
+   * the CTA and the live lamp their scarcity. Desaturated enough to read as
+   * metal rather than as a signal. */
+  --sd-gold-hi: #a98f4e;
+  --sd-gold: #7d6733;
+  --sd-gold-lo: #4c3d1d;
+}
+
+.card, .panel-lite {
+  position: relative; overflow: hidden;
+  border: 0; border-radius: 0;
+  /* The label face: a lighter moulding at the contact end fading into the
+   * body of the card, the way injected plastic actually catches light. */
+  background:
+    linear-gradient(180deg, #1a221e 0, var(--gg-panel) 130px),
+    var(--gg-panel);
+  /* Moulded edge: light catching the top-left, shadow on the bottom-right. */
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, .055),
+    inset -1px -1px 0 rgba(0, 0, 0, .55);
+  /* Top padding clears the contact block; left padding clears the notch. */
+  padding: calc(var(--sd-contact-h) + 24px) 24px 46px 30px;
   clip-path: polygon(
     0 0,
-    calc(100% - 22px) 0,      /* toward the clipped corner */
-    100% 22px,                /* the chamfer */
+    calc(100% - var(--sd-chamfer)) 0,
+    100% var(--sd-chamfer),
     100% 100%,
     0 100%,
-    0 66px,                   /* up the left edge to the notch */
-    9px 66px,
-    9px 38px,                 /* the write-protect notch */
-    0 38px
+    0 calc(var(--sd-notch-y) + var(--sd-notch-h)),
+    var(--sd-notch-d) calc(var(--sd-notch-y) + var(--sd-notch-h)),
+    var(--sd-notch-d) var(--sd-notch-y),
+    0 var(--sd-notch-y)
   );
 }
-/* The edge bar — light entering the pane from one side, not a decorative
- * stripe. The notch interrupts it, exactly as a slider would. */
-.card::before {
+
+/* The edge bar — light entering the pane from one side. The notch interrupts
+ * it, exactly as a slider would. */
+.card::before, .panel-lite::before {
   content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
   background: linear-gradient(180deg, var(--gg-alloy), rgba(110, 168, 216, .05) 70%, transparent);
   z-index: 1;
 }
-/* Contact fingers. Alloy, NOT gold: real SD contacts are gold, but compass
- * yellow is this deck's one go-colour and spending it on chrome would cost
- * the CTA and the live lamp their scarcity. The shape carries the reference
- * on its own. */
-.card > .teeth {
-  position: absolute; top: 0; left: 30px; right: 34px; height: 11px;
-  background: repeating-linear-gradient(90deg,
-    rgba(110, 168, 216, .32) 0 6px, transparent 6px 12px);
+
+/* GOLD CONTACT FINGERS. Two stacked layers: brass with a vertical sheen
+ * underneath, and the dark recessed slots that separate the pads painted over
+ * it. Rounded only at the bottom, because on a real card the pads run off the
+ * top edge into the shell. Inset from the left by the notch and from the
+ * right by the chamfer, so the block never collides with either. */
+.card > .teeth, .panel-lite > .teeth {
+  position: absolute; top: 0; left: 26px;
+  right: calc(var(--sd-chamfer) + 14px);
+  height: var(--sd-contact-h);
+  border-radius: 0 0 5px 5px;
   opacity: 1;
+  background-image:
+    repeating-linear-gradient(90deg,
+      transparent 0 14px, rgba(8, 12, 10, .92) 14px 20px),
+    linear-gradient(180deg, var(--sd-gold-hi) 0%, var(--sd-gold) 52%, var(--sd-gold-lo) 100%);
+  box-shadow: inset 0 -1px 2px rgba(0, 0, 0, .5);
 }
-.card > .teeth { position: absolute; inset: 0 0 auto 0; height: 3px; opacity: .55; }
+
+/* THE CHIP STAMP. The gear mark and $GARY silkscreened onto the label, the
+ * way a part number is printed on a memory chip: low contrast, bottom-right,
+ * out of the reading path. Inlined as a data URI so it costs no request and
+ * needs no markup — '#' is percent-encoded because CSS would read it as a
+ * fragment. */
+.card::after, .panel-lite::after {
+  content: "";
+  position: absolute; right: 18px; bottom: 12px;
+  width: 92px; height: 26px;
+  pointer-events: none; opacity: .22;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 152 44'><g stroke='%236ea8d8' stroke-width='3'><line x1='22' y1='2' x2='22' y2='8'/><line x1='22' y1='2' x2='22' y2='8' transform='rotate(45 22 22)'/><line x1='22' y1='2' x2='22' y2='8' transform='rotate(90 22 22)'/><line x1='22' y1='2' x2='22' y2='8' transform='rotate(135 22 22)'/><line x1='22' y1='2' x2='22' y2='8' transform='rotate(180 22 22)'/><line x1='22' y1='2' x2='22' y2='8' transform='rotate(225 22 22)'/><line x1='22' y1='2' x2='22' y2='8' transform='rotate(270 22 22)'/><line x1='22' y1='2' x2='22' y2='8' transform='rotate(315 22 22)'/></g><circle cx='22' cy='22' r='12' fill='none' stroke='%236ea8d8' stroke-width='2.6'/><rect x='15' y='19.6' width='14' height='4.8' rx='2.4' fill='%23ffd400'/><text x='46' y='29' font-family='monospace' font-size='19' font-weight='700' fill='%236ea8d8'>$GARY</text></svg>") right bottom / contain no-repeat;
+}
+/* On a pane whose content runs to the bottom edge the stamp would sit under
+ * live text, so it is dropped there rather than competing with a readout. */
+.card:has(.chart-host)::after,
+.card:has(.chan-row)::after,
+.card:has(.rows)::after { content: none; }
+
 .card h3 {
   font: 600 10px/1 var(--gg-mono); letter-spacing: .22em; text-transform: uppercase;
   color: var(--gg-alloy); margin-bottom: 10px;
@@ -543,7 +587,33 @@ section .wrap { position: relative; }
   padding: 8px 12px; border-radius: 7px; cursor: pointer;
 }
 .rig-ctl button.on, .rig-ctl button:hover { border-color: var(--gg-compass); color: var(--gg-compass); }
-.rig-strip { position: absolute; right: 16px; bottom: 20px; width: min(240px, 42vw); accent-color: var(--gg-compass); }
+/* The field-strip slider. Compass yellow is spent here deliberately: this is
+ * a control the visitor is being asked to act on, which is precisely what the
+ * go-colour is for. The glow pulses until the slider is used and then stops
+ * for good — an affordance answers a question once, and a hint that keeps
+ * pulsing after you have understood it is just noise. */
+.rig-strip {
+  position: absolute; right: 16px; bottom: 20px;
+  width: min(240px, 42vw); height: 20px;
+  accent-color: var(--gg-compass);
+  border-radius: 999px;
+  animation: ggStripHint 2.6s ease-in-out infinite;
+}
+.rig-strip.used { animation: none; box-shadow: none; }
+@keyframes ggStripHint {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255, 212, 0, .30), 0 0 12px rgba(255, 212, 0, .22); }
+  50%      { box-shadow: 0 0 0 1px rgba(255, 212, 0, .70), 0 0 22px rgba(255, 212, 0, .55); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rig-strip { animation: none; box-shadow: 0 0 0 1px rgba(255, 212, 0, .45); }
+}
+/* The label that names what the glow is for. Without it the glow says
+ * "something here", not "drag this to take the rig apart". */
+.rig-strip-label {
+  position: absolute; right: 16px; bottom: 44px;
+  font: 600 9px/1 var(--gg-mono); letter-spacing: .2em; text-transform: uppercase;
+  color: var(--gg-compass); opacity: .8; pointer-events: none;
+}
 .rig-panel {
   position: absolute; right: 16px; top: 14px; width: min(320px, 84vw);
   display: flex; flex-direction: column; gap: 10px;
@@ -741,10 +811,14 @@ footer .disclaimer b { color: var(--gg-ink); }
  * how much scroll the strip consumes — 220vh means the model comes apart over
  * a little over one screen of travel, which is enough to feel deliberate
  * without stranding a reader who just wants to get to the next section. */
-.rig-stage { position: relative; height: 220vh; }
-.rig-sticky { position: sticky; top: 62px; }
+/* The stage is now just a container. It used to be 220vh of scroll runway
+ * with a sticky viewport inside it, which existed ONLY to drive the
+ * field-strip from scroll position — a screen and a half of scrolling that
+ * fed an animation and nothing else. The slider drives the strip now, so the
+ * runway is gone and the section is the height of its own content. */
+.rig-stage { position: relative; }
+.rig-sticky { position: static; }
 .rig-note {
   font-family: var(--gg-mono); font-size: 10.5px; letter-spacing: .14em;
   text-transform: uppercase; color: var(--gg-muted); margin-top: 12px;
 }
-@media (max-width: 900px) { .rig-stage { height: 190vh; } }

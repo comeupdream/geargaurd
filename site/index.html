@@ -41,10 +41,10 @@
       <span class="tick">$GARY</span>
     </a>
     <nav>
-      <a href="#guard">01 Guard</a>
+      <a href="#charge">01 Charge</a>
       <a href="#rig">02 Rig</a>
-      <a href="#drivetrain">03 Drivetrain</a>
-      <a href="#charge">04 Charge</a>
+      <a href="#guard">03 Guard</a>
+      <a href="#drivetrain">04 Drivetrain</a>
       <a href="#trail">05 Trail</a>
     </nav>
   </div>
@@ -87,7 +87,7 @@
       <!-- Contract address, rendered VERBATIM — mixed case and all. The casing
            IS the EIP-55 checksum, so lower-casing it to look tidier would throw
            away the one thing that catches a mistyped or swapped address. -->
-      <div class="panel-lite">
+      <div class="panel-lite"><div class="teeth"></div>
         <div class="panel-k">Contract address · $GARY</div>
         <button type="button" class="ca-row" id="caCopy"
                 aria-label="Copy the contract address to the clipboard">
@@ -103,7 +103,7 @@
       </div>
 
       <!-- Holder rewards. -->
-      <div class="panel-lite">
+      <div class="panel-lite"><div class="teeth"></div>
         <div class="panel-k">Holder rewards</div>
         <p class="rw-lede">
           Hold <b>$GARY</b>, receive <b class="rw-hit">tokenized RIVN stock</b>
@@ -132,140 +132,10 @@
 
 <div class="wrap"><div class="teeth"></div></div>
 
-<!-- ===================== 01 the guard ===================== -->
-<section id="guard">
-  <div class="wrap">
-    <span class="livery" aria-hidden="true" data-n="01">01</span>
-    <div class="sec-head"><h2>The Guard</h2><span class="sub">What Gary actually does</span><em class="jp" aria-hidden="true">番人</em></div>
-    <hr class="horizon">
-    <div class="grid g3">
-      <div class="card"><div class="teeth"></div>
-        <h3>Watches, never drives</h3>
-        <p>Gary is a sentry, not a driver. Every surface in this project reads
-        public data and reports it. Nothing here holds a key, signs a
-        transaction, or moves a balance on anyone's behalf.</p>
-      </div>
-      <div class="card"><div class="teeth"></div>
-        <h3>Quoted by contract, never by name</h3>
-        <p>The readout prices this token by its <b>contract address</b>, from
-        the deepest pool it trades in. A copycat mint using the same ticker
-        cannot inherit this quote, because the ticker is never what is looked
-        up.</p>
-      </div>
-      <div class="card"><div class="teeth"></div>
-        <h3>A shallow pool is not a price</h3>
-        <p>Any pool below the stated liquidity floor is reported as too thin to
-        quote rather than printed as a number. A fifty-dollar puddle moves 40%
-        on one buy, and a market cap built on it is fiction.</p>
-      </div>
-    </div>
-    <div class="grid g2" style="margin-top:26px">
-      <div class="card"><div class="teeth"></div>
-        <h3>A dark feed is not a zero</h3>
-        <p>When an upstream stops answering, the last good reading stays on
-        screen, visibly aged, and the status lamp turns. It is never replaced
-        by <span class="mono">$0.00</span> — the difference between "we cannot
-        see it" and "it is worthless" is the whole readout.</p>
-      </div>
-      <div class="card"><div class="teeth"></div>
-        <h3>No write path, and none planned</h3>
-        <p>The backend serves <span class="mono">GET</span> and nothing else,
-        and a test in the repository fails the build if any other method ever
-        appears. Buying happens in your own wallet on a DEX you choose — never
-        through a server sitting on a public URL.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== 02 the rig ===================== -->
-<section id="rig" style="padding-bottom:0">
-  <div class="wrap">
-    <span class="livery" aria-hidden="true" data-n="02">02</span>
-    <div class="sec-head"><h2>The Rig</h2><span class="sub">Three-row electric SUV · pure math</span><em class="jp" aria-hidden="true">車体</em></div>
-    <hr class="horizon">
-  </div>
-  <div class="rig-stage" id="rigStage">
-    <div class="rig-sticky">
-      <div class="wrap">
-        <div class="rig filmed bracketed">
-          <canvas id="rig-wire" aria-label="Interactive wireframe electric SUV — drag to rotate, scroll to field-strip, tap a part to read its dossier"></canvas>
-          <div class="rig-hud">GG_RIG_ASSY · quad motor · no images, no libraries</div>
-          <div id="rigLabel">// ASSEMBLY — INTACT</div>
-          <div class="rig-ctl">
-            <button type="button" id="rigRot">Auto-rotate</button>
-            <button type="button" id="rigShade">Shade</button>
-            <button type="button" id="rigIso">Isolate</button>
-            <button type="button" id="rigZi" aria-label="Zoom in">＋</button>
-            <button type="button" id="rigZo" aria-label="Zoom out">－</button>
-          </div>
-          <input type="range" class="rig-strip" id="rigStrip" min="0" max="100" value="0" aria-label="Field strip">
-          <div class="rig-panel">
-            <div class="rig-card"><h4>GG_RIG_ASSY.step</h4><div id="rigInfo"></div></div>
-            <div class="rig-card"><h4>Part dossier</h4>
-              <div id="rigDossier">
-                <h5>Tap any part</h5>
-                <p>Every component on this rig is drawn from numbers in one
-                file — profile points, cylinders, swept tubes and real toothed
-                gears. Tap one to read what it is and why it is here.</p>
-              </div>
-            </div>
-            <div class="rig-card"><h4>Assemblies</h4><div id="rigGroups"></div></div>
-          </div>
-        </div>
-        <p class="rig-note">Drag to rotate · scroll to field-strip · tap a part · shift+wheel to zoom</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== 03 drivetrain ===================== -->
-<section id="drivetrain">
-  <div class="wrap">
-    <span class="livery" aria-hidden="true" data-n="03">03</span>
-    <div class="sec-head"><h2>Drivetrain</h2><span class="sub">Where the supply goes</span><em class="jp" aria-hidden="true">駆動系</em></div>
-    <hr class="horizon">
-    <div class="grid g2">
-      <div class="card"><div class="teeth"></div>
-        <h3>Drive modes — allocation</h3>
-        <div class="rows">
-          <div class="r"><span>PACK — liquidity pool</span><b>60%</b></div>
-          <div class="r"><span>TRAIL FUND — community</span><b>20%</b></div>
-          <div class="r"><span>GEAR LOCKER — treasury</span><b>10%</b></div>
-          <div class="r"><span>LISTINGS &amp; market depth</span><b>7%</b></div>
-          <div class="r"><span>CREW — vested</span><b>3%</b></div>
-        </div>
-        <p style="margin-top:12px;font-size:12.5px">
-          The readout links straight to the pool, so every figure on this page
-          can be checked against the chain.
-        </p>
-      </div>
-      <div class="card"><div class="teeth"></div>
-        <h3>Spec plate</h3>
-        <div class="rows">
-          <div class="r"><span>TICKER</span><b>$GARY</b></div>
-          <div class="r"><span>CHAIN</span><b id="tokChainRow">—</b></div>
-          <div class="r"><span>CONTRACT</span><b id="tokContract" style="word-break:break-all;font-size:10.5px">not set</b></div>
-          <div class="r"><span>BUY / SELL TAX</span><b>0% / 0%</b></div>
-          <div class="r"><span>MINT AUTHORITY</span><b>to be revoked at launch</b></div>
-          <div class="r"><span>LP</span><b>to be locked at launch</b></div>
-          <div class="r"><span>HOLDER REWARD</span><b>tokenized RIVN · Robinhood Chain</b></div>
-          <div class="r"><span>DISTRIBUTION</span><b>automatic · no claim</b></div>
-          <div class="r"><span>QUOTE FLOOR</span><b id="tokFloor">—</b></div>
-        </div>
-        <p style="margin-top:12px;font-size:12.5px">
-          Chain, contract and quote floor are read live from the readout
-          service; the rest are fixed properties of the token.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== 04 charge ===================== -->
+<!-- ===================== 01 charge ===================== -->
 <section id="charge">
   <div class="wrap">
-    <span class="livery" aria-hidden="true" data-n="04">04</span>
+    <span class="livery" aria-hidden="true" data-n="01">01</span>
     <div class="sec-head"><h2>Charge</h2><span class="sub">Live readout</span><em class="jp" aria-hidden="true">充電</em></div>
     <hr class="horizon">
     <div class="grid g3">
@@ -336,6 +206,137 @@
   </div>
 </section>
 
+<!-- ===================== 02 the rig ===================== -->
+<section id="rig" style="padding-bottom:0">
+  <div class="wrap">
+    <span class="livery" aria-hidden="true" data-n="02">02</span>
+    <div class="sec-head"><h2>The Rig</h2><span class="sub">Three-row electric SUV · pure math</span><em class="jp" aria-hidden="true">車体</em></div>
+    <hr class="horizon">
+  </div>
+  <div class="rig-stage" id="rigStage">
+    <div class="rig-sticky">
+      <div class="wrap">
+        <div class="rig filmed bracketed">
+          <canvas id="rig-wire" aria-label="Interactive wireframe electric SUV — drag to rotate, scroll to field-strip, tap a part to read its dossier"></canvas>
+          <div class="rig-hud">GG_RIG_ASSY · quad motor · no images, no libraries</div>
+          <div id="rigLabel">// ASSEMBLY — INTACT</div>
+          <div class="rig-ctl">
+            <button type="button" id="rigRot">Auto-rotate</button>
+            <button type="button" id="rigShade">Shade</button>
+            <button type="button" id="rigIso">Isolate</button>
+            <button type="button" id="rigZi" aria-label="Zoom in">＋</button>
+            <button type="button" id="rigZo" aria-label="Zoom out">－</button>
+          </div>
+          <span class="rig-strip-label" aria-hidden="true">◄ drag to field-strip ►</span>
+          <input type="range" class="rig-strip" id="rigStrip" min="0" max="100" value="0" aria-label="Field strip the rig">
+          <div class="rig-panel">
+            <div class="rig-card"><h4>GG_RIG_ASSY.step</h4><div id="rigInfo"></div></div>
+            <div class="rig-card"><h4>Part dossier</h4>
+              <div id="rigDossier">
+                <h5>Tap any part</h5>
+                <p>Every component on this rig is drawn from numbers in one
+                file — profile points, cylinders, swept tubes and real toothed
+                gears. Tap one to read what it is and why it is here.</p>
+              </div>
+            </div>
+            <div class="rig-card"><h4>Assemblies</h4><div id="rigGroups"></div></div>
+          </div>
+        </div>
+        <p class="rig-note">Drag to rotate · drag the slider to field-strip · tap a part · shift+wheel to zoom</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 03 the guard ===================== -->
+<section id="guard">
+  <div class="wrap">
+    <span class="livery" aria-hidden="true" data-n="03">03</span>
+    <div class="sec-head"><h2>The Guard</h2><span class="sub">What Gary actually does</span><em class="jp" aria-hidden="true">番人</em></div>
+    <hr class="horizon">
+    <div class="grid g3">
+      <div class="card"><div class="teeth"></div>
+        <h3>Watches, never drives</h3>
+        <p>Gary is a sentry, not a driver. Every surface in this project reads
+        public data and reports it. Nothing here holds a key, signs a
+        transaction, or moves a balance on anyone's behalf.</p>
+      </div>
+      <div class="card"><div class="teeth"></div>
+        <h3>Quoted by contract, never by name</h3>
+        <p>The readout prices this token by its <b>contract address</b>, from
+        the deepest pool it trades in. A copycat mint using the same ticker
+        cannot inherit this quote, because the ticker is never what is looked
+        up.</p>
+      </div>
+      <div class="card"><div class="teeth"></div>
+        <h3>A shallow pool is not a price</h3>
+        <p>Any pool below the stated liquidity floor is reported as too thin to
+        quote rather than printed as a number. A fifty-dollar puddle moves 40%
+        on one buy, and a market cap built on it is fiction.</p>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:26px">
+      <div class="card"><div class="teeth"></div>
+        <h3>A dark feed is not a zero</h3>
+        <p>When an upstream stops answering, the last good reading stays on
+        screen, visibly aged, and the status lamp turns. It is never replaced
+        by <span class="mono">$0.00</span> — the difference between "we cannot
+        see it" and "it is worthless" is the whole readout.</p>
+      </div>
+      <div class="card"><div class="teeth"></div>
+        <h3>No write path, and none planned</h3>
+        <p>The backend serves <span class="mono">GET</span> and nothing else,
+        and a test in the repository fails the build if any other method ever
+        appears. Buying happens in your own wallet on a DEX you choose — never
+        through a server sitting on a public URL.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 04 drivetrain ===================== -->
+<section id="drivetrain">
+  <div class="wrap">
+    <span class="livery" aria-hidden="true" data-n="04">04</span>
+    <div class="sec-head"><h2>Drivetrain</h2><span class="sub">Where the supply goes</span><em class="jp" aria-hidden="true">駆動系</em></div>
+    <hr class="horizon">
+    <div class="grid g2">
+      <div class="card"><div class="teeth"></div>
+        <h3>Drive modes — allocation</h3>
+        <div class="rows">
+          <div class="r"><span>PACK — liquidity pool</span><b>60%</b></div>
+          <div class="r"><span>TRAIL FUND — community</span><b>20%</b></div>
+          <div class="r"><span>GEAR LOCKER — treasury</span><b>10%</b></div>
+          <div class="r"><span>LISTINGS &amp; market depth</span><b>7%</b></div>
+          <div class="r"><span>CREW — vested</span><b>3%</b></div>
+        </div>
+        <p style="margin-top:12px;font-size:12.5px">
+          The readout links straight to the pool, so every figure on this page
+          can be checked against the chain.
+        </p>
+      </div>
+      <div class="card"><div class="teeth"></div>
+        <h3>Spec plate</h3>
+        <div class="rows">
+          <div class="r"><span>TICKER</span><b>$GARY</b></div>
+          <div class="r"><span>CHAIN</span><b id="tokChainRow">—</b></div>
+          <div class="r"><span>CONTRACT</span><b id="tokContract" style="word-break:break-all;font-size:10.5px">not set</b></div>
+          <div class="r"><span>BUY / SELL TAX</span><b>0% / 0%</b></div>
+          <div class="r"><span>MINT AUTHORITY</span><b>to be revoked at launch</b></div>
+          <div class="r"><span>LP</span><b>to be locked at launch</b></div>
+          <div class="r"><span>HOLDER REWARD</span><b>tokenized RIVN · Robinhood Chain</b></div>
+          <div class="r"><span>DISTRIBUTION</span><b>automatic · no claim</b></div>
+          <div class="r"><span>QUOTE FLOOR</span><b id="tokFloor">—</b></div>
+        </div>
+        <p style="margin-top:12px;font-size:12.5px">
+          Chain, contract and quote floor are read live from the readout
+          service; the rest are fixed properties of the token.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ===================== 05 trail ===================== -->
 <section id="trail">
   <div class="wrap">
@@ -370,11 +371,35 @@
         reads from the chain rather than from this file.</p>
       </div>
       <div class="leg">
-        <h4>Leg 05 — Gear Guard</h4>
+        <h4>Leg 05 — The arcade</h4>
+        <div class="when">In build</div>
+        <p>Mini games on the deck, built the way the rig was: procedural,
+        no engine, no assets. Trail runs, a gear-tunnel loader, a drag ladder
+        down the strip. Free to play, high scores kept per address, and
+        seasons that pay out to the top of the board.</p>
+      </div>
+      <div class="leg">
+        <h4>Leg 06 — The pit · player-vs-player</h4>
+        <div class="when">After leg 05</div>
+        <p>Wager $GARY head to head. Deposit into a match escrow, pick your
+        opponent or take an open seat, and the contract pays the winner and
+        returns the rake to the locker. Skill games first — the arcade
+        ladder with stakes on it — then the table games.</p>
+      </div>
+      <div class="leg">
+        <h4>Leg 07 — Tokenized house</h4>
         <div class="when">Unscheduled</div>
-        <p>The sentry, doing the thing it is named for: watching the pool and
-        the locker and reporting what changed. Still read-only — a watcher that
-        can act is a different product, and it is not this one.</p>
+        <p>Holders back the house rather than only playing against it:
+        deposits into a shared bankroll, an on-chain edge that anyone can
+        read, and the rake distributed the same way the RIVN rewards already
+        are — automatically, with nothing to claim.</p>
+      </div>
+      <div class="leg">
+        <h4>Leg 08 — Gear Guard</h4>
+        <div class="when">Unscheduled</div>
+        <p>The sentry, doing the thing it is named for: watching the pool, the
+        locker and the escrows, and reporting what changed. Still read-only —
+        a watcher that can act is a different product, and it is not this one.</p>
       </div>
     </div>
   </div>
