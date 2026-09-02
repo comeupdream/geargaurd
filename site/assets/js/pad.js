@@ -163,67 +163,80 @@ function outlineRegion(pts, pad) {
 }
 
 /* Wave keyframes. Note the first entry is BELOW the rest position: that is
- * the anticipation dip, and removing it makes the wave read as a jump cut. */
+ * the anticipation dip, and removing it makes the wave read as a jump cut.
+ * Shoulders sit at the vest's top edge (y ~ 33), so the arms grow out of the
+ * jacket rather than out of the head. */
 var WAVE = [
-  [[35, 30], [38, 28], [40, 27]],                    /* dip (anticipation)   */
-  [[35, 29], [39, 24], [41, 20]],                    /* lift                 */
-  [[35, 28], [40, 21], [43, 14]],                    /* up                   */
-  [[35, 28], [39, 20], [41, 12]],                    /* over                 */
-  [[35, 28], [40, 21], [43, 14]],                    /* back                 */
-  [[35, 29], [39, 24], [41, 20]]                     /* down                 */
+  [[35, 34], [38, 32], [40, 31]],                    /* dip (anticipation)   */
+  [[35, 33], [39, 27], [41, 22]],                    /* lift                 */
+  [[35, 32], [40, 23], [43, 15]],                    /* up                   */
+  [[35, 32], [39, 22], [41, 13]],                    /* over                 */
+  [[35, 32], [40, 23], [43, 15]],                    /* back                 */
+  [[35, 33], [39, 27], [41, 22]]                     /* down                 */
 ];
-var REST_R = [[35, 30], [38, 32], [39, 35]];
-var REST_L = [[13, 30], [10, 32], [9, 35]];
+var REST_R = [[35, 33], [38, 36], [39, 40]];
+var REST_L = [[13, 33], [10, 36], [9, 40]];
 
+/* ---------------------------------------------------------------------------
+ * VERTICAL LAYOUT — the thing the second pass fixed.
+ *
+ * The first pass put the vest at y=21 and the mouth's lower curve at y=25, so
+ * the mouth painted straight into the jacket: the vest was literally in his
+ * mouth. Now every band is stacked with room between it and the next, top
+ * to bottom, and the numbers below are the only place they live:
+ *
+ *   head       2..22   (hy = 12, ry 10)
+ *   headband   7..11
+ *   eyes      14..16
+ *   mouth     19..25
+ *   chin/chest fur showing   26      <- one clear row before the jacket
+ *   vest      27..39   (vy = 27)
+ *   shorts    40..47   (off-screen: the pad crops him at the waist)
+ *
+ * Between the two vest halves is FUR, not vest-shade — the jacket is OPEN
+ * and the chest shows through, which is what the reference actually has.
+ * Nothing is painted in that channel; the torso simply shows. */
 function drawGary(f, st) {
   grid.fill(0);
   var boil = f % 3;                       /* the 3-frame outline cycle       */
   var breathe = st.breathe;               /* -1 | 0 | +1                      */
+  var hy = 12 + breathe;                  /* head centre                      */
+  var vy = 27 + breathe;                  /* vest top                         */
 
-  /* ---- shadow on the screen floor ---- */
-  rect(12, 46, 34, 46, SOFT);
-  rect(14, 47, 32, 47, SOFT);
+  /* ---- shorts (mostly below the crop line; drawn so the vest bottom has
+   *      something to sit on if the pad is ever taller) ---- */
+  rect(13, vy + 13, 33, 47, TEAL);
+  for (var y = vy + 13; y <= 47; y++) { px(12, y, INK); px(34, y, INK); }
 
-  /* ---- legs + boots ---- */
-  furBlob(19, 40, 4, 5, 700 + boil, FUR);
-  furBlob(28, 40, 4, 5, 730 + boil, FUR);
-  rect(15, 43, 22, 45, TEAL); px(15, 43, INK); px(22, 43, INK);
-  rect(25, 43, 32, 45, TEAL); px(25, 43, INK); px(32, 43, INK);
+  /* ---- torso: the boiling fur silhouette the jacket sits on ---- */
+  furBlob(23, 30 + breathe, 11, 9, 100 + boil, FUR);
 
-  /* ---- shorts ---- */
-  rect(13, 34, 33, 42, TEAL);
-  hline(13, 33, 33, INK); hline(13, 33, 43, INK);
-  for (var y = 34; y <= 42; y++) { px(12, y, INK); px(34, y, INK); }
-  rect(26, 36, 31, 40, TEAL); px(26, 36, INK); px(31, 36, INK);   /* pocket   */
-  hline(26, 31, 36, INK); hline(26, 31, 40, INK);
-
-  /* ---- torso (boiling fur silhouette) ---- */
-  furBlob(23, 27 + breathe, 11, 9 + (breathe > 0 ? 1 : 0), 100 + boil, FUR);
-
-  /* ---- vest over the torso ---- */
-  var vy = 21 + breathe;
+  /* ---- vest, two halves, OPEN. The channel between x=21..25 is left
+   *      unpainted so the chest fur shows through. ---- */
   rect(13, vy, 20, vy + 12, VEST);
   rect(26, vy, 33, vy + 12, VEST);
-  rect(21, vy, 25, vy + 12, VESTD);            /* the open zip channel        */
-  for (var q = 0; q < 5; q++) {                /* quilting                    */
+  for (var q = 0; q < 6; q++) {                /* quilting                    */
     hline(13, 20, vy + 2 + q * 2, VESTD);
     hline(26, 33, vy + 2 + q * 2, VESTD);
   }
-  hline(13, 33, vy - 1, INK);
-  hline(13, 33, vy + 13, INK);
-  for (y = vy; y <= vy + 12; y++) { px(12, y, INK); px(34, y, INK); px(21, y, INK); px(25, y, INK); }
+  hline(13, 20, vy - 1, INK); hline(26, 33, vy - 1, INK);      /* collar    */
+  hline(13, 33, vy + 13, INK);                                  /* hem       */
+  for (y = vy; y <= vy + 12; y++) {
+    px(12, y, INK); px(34, y, INK);                             /* outer     */
+    px(20, y, INK); px(26, y, INK);                             /* zip edges */
+  }
+  /* Zip teeth down each inner edge — reads as a zipper, not a seam. */
+  for (y = vy + 1; y <= vy + 11; y += 2) { px(21, y, WHT); px(25, y, WHT); }
 
   /* ---- arms ---- */
   arm(REST_L, 3, 400 + boil);
   arm(st.wave >= 0 ? WAVE[st.wave] : REST_R, 3, 420 + boil);
 
   /* ---- head ---- */
-  var hy = 13 + breathe;
   furBlob(23, hy, 12, 10, 200 + boil, FUR);
-  /* a few highlight tufts, so the fur is not one flat mass */
   var rnd = mulberry32(300 + boil);
-  for (var i = 0; i < 26; i++) {
-    var ax = 12 + Math.floor(rnd() * 22), ay = hy - 8 + Math.floor(rnd() * 6);
+  for (var i = 0; i < 22; i++) {                /* highlight tufts          */
+    var ax = 12 + Math.floor(rnd() * 22), ay = hy - 8 + Math.floor(rnd() * 5);
     if (grid[ay * W + ax] === FUR) px(ax, ay, LIT);
   }
 
@@ -235,30 +248,25 @@ function drawGary(f, st) {
   for (y = hy - 5; y <= hy - 1; y++) { px(10, y, INK); px(36, y, INK); }
 
   /* ---- face ----
-   * The face is most of what makes a mascot read, so it is the part that
-   * was redrawn after the first render. Two rules came out of that:
-   *   - eyes are plain 2x3 dots with NO glint. A glint inside a dark block
-   *     reads as a pupil in a narrowed eye, i.e. a squint. Solid dots read
-   *     as open and friendly.
-   *   - the grin is WIDE and open, flat on top with the tooth row under
-   *     the lip and a curved bottom — a "D" on its side. A small dark box
-   *     with two teeth in it read as fangs. */
+   * Eyes are plain 2x3 dots with no glint — a glint inside a dark block reads
+   * as a pupil in a narrowed eye. The grin is wide and open: flat upper lip,
+   * a tooth row under it, and a curved bottom. */
   if (st.blink) {
-    hline(17, 18, hy + 3, INK);
-    hline(28, 29, hy + 3, INK);
+    hline(17, 18, hy + 4, INK);
+    hline(28, 29, hy + 4, INK);
   } else {
-    rect(17, hy + 1, 18, hy + 3, INK);
-    rect(28, hy + 1, 29, hy + 3, INK);
+    rect(17, hy + 2, 18, hy + 4, INK);
+    rect(28, hy + 2, 29, hy + 4, INK);
   }
-  hline(16, 30, hy + 6, INK);                          /* upper lip           */
-  hline(16, 30, hy + 7, TEETH);                        /* the tooth row       */
-  px(19, hy + 7, INK); px(23, hy + 7, INK); px(27, hy + 7, INK);   /* gaps  */
-  px(16, hy + 7, INK); px(30, hy + 7, INK);
-  hline(16, 30, hy + 8, INK);                          /* open mouth, curving */
-  hline(17, 29, hy + 9, INK);
-  hline(18, 28, hy + 10, INK);
-  hline(20, 26, hy + 11, INK);
-  hline(22, 24, hy + 12, INK);
+  hline(16, 30, hy + 7, INK);                          /* upper lip           */
+  hline(16, 30, hy + 8, TEETH);                        /* the tooth row       */
+  px(16, hy + 8, INK); px(19, hy + 8, INK); px(23, hy + 8, INK);
+  px(27, hy + 8, INK); px(30, hy + 8, INK);
+  hline(16, 30, hy + 9, INK);                          /* open mouth, curving */
+  hline(17, 29, hy + 10, INK);
+  hline(18, 28, hy + 11, INK);
+  hline(20, 26, hy + 12, INK);
+  hline(22, 24, hy + 13, INK);
 }
 
 /* ---- blit ---------------------------------------------------------------- */
