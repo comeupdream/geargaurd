@@ -145,8 +145,11 @@ function paintToken(tok, limits) {
   setText('tok24h', pct(ch), 'v ' + (typeof ch === 'number' && ch < 0 ? 'down' : 'up'));
   setText('tokStatus', stale
     ? 'Last quote is ' + Math.round(tok.stale_seconds) + 's old — upstream is not answering.'
-    : 'Quoted from the deepest pool of ' + (tok.pools_seen || 1) + ' on ' +
-      ((tok.pair && tok.pair.dex) || 'a DEX') + ', by contract address.');
+    /* Names the route that actually answered. Saying "by contract address"
+     * when the pinned pool answered would describe the wrong mechanism, and
+     * that sentence is the page's own audit trail for its number. */
+    : 'Quoted live from DexScreener via the ' + (tok.route || 'pool') + ' on ' +
+      ((tok.pair && tok.pair.dex) || 'a DEX') + '.');
 
   var link = $('tokPairLink');
   if (link && tok.pair && tok.pair.url) { link.href = tok.pair.url; link.hidden = false; }
@@ -237,12 +240,62 @@ function paintMajors(maj) {
 }
 
 /* ---------------------------------------------------------------------------
- * The chart
+ * Adapting the market store to the shape the painters already expect.
+ *
+ * GGMARKET (coin.js) hands back a raw DexScreener pair. Everything below was
+ * written against the backend's normalised JSON, so one adapter keeps both
+ * sources interchangeable instead of forking every painter.
  * ------------------------------------------------------------------------- */
+var C = window.GGCOIN || {};
+
+function num(v) { var n = parseFloat(v); return isFinite(n) ? n : null; }
+
+function fromStore(st) {
+  var p = st.pair;
+  var base = {
+    symbol: C.symbol, chain: C.chainLabel || C.chainSlug, contract: C.ca,
+    status: st.status, detail: st.detail, route: st.route, stale_seconds: 0
+  };
+  if (!p) return base;
+  var ch = p.priceChange || {}, vol = p.volume || {}, tx = (p.txns || {}).h24 || {};
+  return {
+    symbol: (p.baseToken && p.baseToken.symbol) || C.symbol,
+    chain: p.chainId || C.chainSlug,
+    contract: C.ca,
+    status: st.status,
+    detail: st.detail,
+    route: st.route,
+    stale_seconds: st.status === 'dark' ? Math.round((Date.now() - st.at) / 1000) : 0,
+    price_usd: num(p.priceUsd),
+    liquidity_usd: num(p.liquidity && p.liquidity.usd),
+    market_cap_usd: num(p.marketCap),
+    fdv_usd: num(p.fdv),
+    volume_24h_usd: num(vol.h24),
+    volume_6h_usd: num(vol.h6),
+    change_1h_pct: num(ch.h1),
+    change_24h_pct: num(ch.h24),
+    txns_24h: (tx.buys != null || tx.sells != null)
+      ? { buys: +tx.buys || 0, sells: +tx.sells || 0 } : null,
+    pair: { dex: p.dexId, url: p.url || C.pairPage },
+    pools_seen: 1,
+    base_token: p.baseToken || null,
+    quote_token: p.quoteToken || null
+  };
+}
+
+/* ---------------------------------------------------------------------------
+ * The chart — candles straight from GeckoTerminal, keyed by the same pool the
+ * price came from. No backend in the path.
+ * ------------------------------------------------------------------------- */
+var RANGES = {
+  '1d':  { tf: 'hour', agg: 1, limit: 24,  label: '24 hours · hourly' },
+  '7d':  { tf: 'hour', agg: 4, limit: 42,  label: '7 days · 4-hourly' },
+  '30d': { tf: 'day',  agg: 1, limit: 30,  label: '30 days · daily' },
+  '90d': { tf: 'day',  agg: 1, limit: 90,  label: '90 days · daily' }
+};
 var range = '7d';
-/* Candles change far more slowly than a spot quote and the upstream throttles
- * keyless callers, so history is fetched on its own slower schedule — not
- * once per state poll. Switching range fetches immediately. */
+/* Candles move far more slowly than a spot quote, and the upstream throttles
+ * keyless callers — so history runs on its own slower schedule. */
 var HISTORY_MS = 300000;
 var lastHistory = null;
 
@@ -254,19 +307,40 @@ function paintHistory(h) {
   safe('priceChart', host, live ? h.candles : null, (h && h.range) || range,
        { detail: h && h.detail });
   setText('chartSrc', live
-    ? (h.label + ' · ' + h.candles.length + ' candles · ' + (h.source || 'upstream') +
-       ', from the same pool as the price above' +
-       (h.stale_seconds > 0 ? ' · ' + Math.round(h.stale_seconds) + 's stale' : ''))
+    ? (h.label + ' · ' + h.candles.length + ' candles · GeckoTerminal, from the ' +
+       'same pool as the price above')
     : (h && h.detail) || 'No candle history available.');
 }
 
 function loadHistory() {
-  if (!API) { paintHistory({ status: 'unset', detail: 'No backend configured for this deployment.' }); return; }
-  fetch(API + '/api/token/history?range=' + encodeURIComponent(range), { cache: 'no-store' })
-    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(paintHistory)
-    .catch(function () {
-      paintHistory({ status: 'dark', detail: 'The readout service is not answering — no candles.' });
+  if (!C.ohlcvApi) { paintHistory({ status: 'dark', detail: 'No pool configured.' }); return; }
+  var r = RANGES[range] || RANGES['7d'];
+  var url = C.ohlcvApi + r.tf + '?aggregate=' + r.agg + '&limit=' + r.limit + '&currency=usd';
+  fetch(url, { cache: 'no-store' })
+    .then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(function (j) {
+      var rows = (((j.data || {}).attributes) || {}).ohlcv_list || [];
+      /* GeckoTerminal returns NEWEST FIRST. A chart drawn in that order runs
+       * backwards through time and nobody notices until the trend reads
+       * inverted — so sort explicitly rather than trusting the order. */
+      var candles = rows.slice().sort(function (a, b) { return a[0] - b[0]; })
+        .map(function (c) {
+          return { t: +c[0], o: +c[1], h: +c[2], l: +c[3], c: +c[4], v: +c[5] };
+        })
+        .filter(function (c) { return isFinite(c.t) && isFinite(c.c); });
+      if (candles.length < 2) {
+        /* One point is not a line. Say the pool is new rather than drawing a
+         * chart that implies a trend from a single dot. */
+        paintHistory({ status: 'no_history', range: range,
+                       detail: 'This pool has no candle history yet — too new to chart.' });
+        return;
+      }
+      paintHistory({ status: 'live', range: range, label: r.label, candles: candles });
+    })
+    .catch(function (err) {
+      paintHistory({ status: 'dark', range: range,
+                     detail: 'Candle source unreachable (' +
+                             ((err && err.message) || 'network error') + ').' });
     });
 }
 
@@ -284,94 +358,72 @@ if (rangeRow) {
 }
 
 /* ---------------------------------------------------------------------------
- * Polling
+ * Diagnostics — names which of the several possible failures actually
+ * happened, instead of showing the same "--" for all of them.
  * ------------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------------
- * Diagnostics
- *
- * A dead readout used to look identical whatever killed it: "--" in every
- * slot. A wrong pool id, an unreachable backend, a stale bundle and a token
- * that genuinely has no market are four different problems wearing one face,
- * and none of them was diagnosable from outside. This names which one it is.
- * ------------------------------------------------------------------------- */
-var diagState = { fetch: 'not attempted', http: null };
-
-function paintDiag(tok, meta) {
+function paintDiag(tok) {
   var host = $('diagRows'), box = $('diag');
   if (!host) return;
   var b = window.GG_BUILD;
   var rows = [
     ['Frontend build', b ? b.commit + ' · ' + b.built : 'unstamped (build.sh did not run)'],
-    ['API base', API || 'none configured (window.GG_API is empty)'],
-    ['Last fetch', diagState.fetch + (diagState.http ? ' · HTTP ' + diagState.http : '')],
-    ['Backend API', (meta && meta.api_version) || 'not reported (backend predates this field)'],
+    ['Quote source', 'DexScreener, direct from this page'],
+    ['Route', (tok && tok.route) || '--'],
     ['Quote status', (tok && tok.status) || '--'],
-    ['Source mode', (tok && tok.source_mode) || '--'],
     ['Chain', (tok && tok.chain) || '--'],
-    ['Pinned pool', (tok && tok.pair_id) || 'none (searching by contract address)'],
+    ['Pinned pool', C.pool || '--'],
     ['Priced asset', tok && tok.base_token && tok.base_token.symbol
       ? tok.base_token.symbol + ' / ' + ((tok.quote_token && tok.quote_token.symbol) || '?')
       : '--'],
+    ['Reference feed', API ? API : 'no backend configured (optional)'],
     ['Detail', (tok && tok.detail) || '—']
   ];
   host.innerHTML = rows.map(function (r) {
-    return '<div class="r"><span>' + r[0] + '</span><b>' + String(r[1])
-      .replace(/[<>&]/g, '') + '</b></div>';
+    return '<div class="r"><span>' + r[0] + '</span><b>' +
+      String(r[1]).replace(/[<>&]/g, '') + '</b></div>';
   }).join('');
-  /* Open itself when something is wrong; stay shut when everything is fine. */
   if (box) box.open = !(tok && tok.status === 'live');
 }
 
-function tick() {
-  if (!API) {
-    /* No backend configured is its own honest state — not an error, and not
-     * an excuse to invent a price. The rest of the page still works. */
-    paintLamp('idle', 'No backend');
-    diagState.fetch = 'skipped — no API base configured';
-    var none = { status: 'unset', detail: 'No backend configured for this deployment.' };
-    paintToken(none, null);
-    paintMajors(null);
-    paintDiag(none, null);
-    return;
-  }
-  fetch(API + '/api/state', { cache: 'no-store' })
-    .then(function (r) {
-      diagState.http = r.status;
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      diagState.fetch = 'ok';
-      return r.json();
-    })
-    .then(function (s) {
-      paintToken(s.token || {}, s.limits);
-      paintMajors(s.majors);
-      paintDiag(s.token || {}, s);
-    })
-    .catch(function (err) {
-      /* The backend itself being unreachable is reported as a dark feed, with
-       * whatever the page last painted left in place. The reason is recorded
-       * for the diagnostics — "failed to fetch" (CORS, DNS, mixed content)
-       * and "HTTP 502" are different problems and must not read alike. */
-      diagState.fetch = 'failed — ' + (err && err.message ? err.message : 'network error');
-      paintLamp('dark', 'Backend unreachable');
-      setText('tokStatus', 'The readout service is not answering. Nothing below is current.');
-      paintMajors(null);
-      paintDiag(null, null);
-    });
+/* ---------------------------------------------------------------------------
+ * Wiring
+ * ------------------------------------------------------------------------- */
+function onMarket(st) {
+  var tok = fromStore(st);
+  paintToken(tok, { min_liquidity_usd: C.minLiquidityUsd });
+  paintDiag(tok);
 }
 
-tick();
+if (window.GGMARKET) {
+  window.GGMARKET.onUpdate(onMarket);
+  onMarket(window.GGMARKET.get());
+} else {
+  /* coin.js did not load. Say so on the page rather than sitting on the
+   * initial placeholder text forever, which is exactly the failure this
+   * whole file was rewritten to stop. */
+  var dead = { status: 'dark', route: 'coin.js not loaded',
+               detail: 'assets/js/coin.js did not load — the market store is missing.' };
+  paintToken(dead, null);
+  paintDiag(dead);
+}
+
 loadHistory();
-setInterval(tick, POLL_MS);
 setInterval(loadHistory, HISTORY_MS);
-/* Coming back to a backgrounded tab should not show a five-minute-old price
- * for thirty seconds. */
-document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
-/* The chart is drawn into a viewBox that stretches with its container, but the
- * tooltip maths and the label positions are computed from the rendered width —
- * so a resize needs a redraw, not just a reflow. */
-/* Redrawn from the LAST PAYLOAD, never re-fetched: the upstream throttles
- * keyless callers hard, and dragging a window edge would otherwise fire a
- * burst of requests and take the chart dark for everyone. */
+
+/* The reference majors are the ONLY thing still served by the backend, and
+ * they are decoration: the token quote no longer depends on it at all. */
+function loadMajors() {
+  if (!API) { paintMajors(null); return; }
+  fetch(API + '/api/state', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+    .then(function (s) { paintMajors(s.majors); })
+    .catch(function () { paintMajors(null); });
+}
+loadMajors();
+setInterval(loadMajors, POLL_MS);
+
+/* Redrawn from the LAST PAYLOAD, never re-fetched: dragging a window edge
+ * would otherwise fire a burst of requests at a throttled upstream. */
 var resizeT = null;
 addEventListener('resize', function () {
   clearTimeout(resizeT);

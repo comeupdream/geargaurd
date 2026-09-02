@@ -410,6 +410,10 @@
 </footer>
 
 <script src="config.js"></script>
+<!-- coin.js first: it declares the token's facts and starts the market
+     store that everything else reads. The quote comes straight from
+     DexScreener in the browser — no backend in the critical path. -->
+<script src="assets/js/coin.js" defer></script>
 <script src="assets/js/enhance.js" defer></script>
 <script src="assets/js/charts.js" defer></script>
 <script src="assets/js/gary.js" defer></script>
