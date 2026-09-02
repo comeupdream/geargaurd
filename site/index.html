@@ -150,6 +150,38 @@
 
     <!-- Context majors. Its own class rather than a borrowed `.rows`, which
          is a stacked spec list and painted an underline under every item. -->
+    <!-- THE PAD. An in-dash display, drawn as a device: bezel, mount, glass
+         glare, and a screen that is genuinely lit — a bright panel in a dark
+         cockpit, which is the same "accents as light" rule the rest of the
+         deck runs on, at object scale.
+
+         Everything on the screen is real: the stat binds to the live market
+         store, and Gary is rasterised pixel by pixel in pad.js. No image
+         files, same as the rig. -->
+    <div class="pad" aria-hidden="true">
+      <div class="pad-shell">
+        <div class="pad-screen">
+          <div class="pad-ui">
+            <div class="pad-head">
+              <p class="pad-line">Your rig is<br>being watched</p>
+              <div class="pad-stat">
+                <b id="padStat">--</b>
+                <span id="padStatK">24h</span>
+              </div>
+            </div>
+            <canvas class="pad-gary" id="padGary" width="184" height="192"></canvas>
+            <div class="pad-foot">
+              <span class="pad-dot"></span>
+              <span id="padFoot">Gear Guard · armed</span>
+            </div>
+          </div>
+          <div class="pad-grain"></div>
+          <div class="pad-glare"></div>
+        </div>
+      </div>
+      <div class="pad-mount"></div>
+    </div>
+
     <div class="majors mono" id="majors" aria-label="Reference market prices">
       <span class="r"><span>ORACLE</span><b>—</b></span>
     </div>
@@ -437,12 +469,11 @@
     <div class="teeth" style="margin-bottom:22px"></div>
     <div class="cols">
       <div class="disclaimer">
-        <p><b>Not affiliated with Rivian Automotive, Inc.</b> GEAR GUARD GARY is
-        an independent, unofficial community project. It is not endorsed by,
-        sponsored by, or connected to Rivian Automotive, Inc. or any vehicle
-        manufacturer, and it uses no manufacturer's trademarks, logos or
-        vehicle designs. The rig on this page is an original wireframe drawing
-        of a generic three-row electric SUV.</p>
+        <p><b>Gear Guard and the Gear Guard character are used under licence
+        from Rivian Automotive, Inc.</b> GEAR GUARD GARY is an independent
+        community project and is not otherwise endorsed by, sponsored by, or
+        operated by Rivian. The rig on this page is an original wireframe
+        drawing of a generic three-row electric SUV.</p>
         <p><b>Not affiliated with Robinhood Markets, Inc.</b> Robinhood Chain is
         named here only to say which network the holder reward is denominated
         on. Nothing on this page is issued, endorsed, processed or reviewed by
@@ -468,6 +499,7 @@
 <script src="assets/js/enhance.js" defer></script>
 <script src="assets/js/charts.js" defer></script>
 <script src="assets/js/gary.js" defer></script>
+<script src="assets/js/pad.js" defer></script>
 <!-- token.js last: it calls into GG.gauge (enhance) and GG.priceChart
      (charts), so both must have registered on window.GG first. defer keeps
      them in document order. -->

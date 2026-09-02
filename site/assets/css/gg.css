@@ -229,6 +229,157 @@ p { margin: 0 0 14px; }
 .lamp[data-state="dark"] { color: var(--gg-danger); }
 .lamp[data-state="dark"]::before { background: var(--gg-danger); box-shadow: 0 0 0 3px rgba(255, 90, 77, .16); }
 
+/* ===========================================================================
+ * THE PAD — an in-dash display, drawn as a physical object.
+ *
+ * It sits in the hero's right half. The screen is LIT — a bright panel in a
+ * dark cockpit — which is the deck's "accents as light" rule applied at
+ * object scale, and it is why the screen is off-white rather than dark: a
+ * dark screen on a dark page is a rectangle; a lit one is a device.
+ *
+ * Layers, back to front:
+ *   .pad-mount   the stalk it stands on
+ *   .pad-shell   the bezel — a moulded frame with a light edge and a dark
+ *                inner lip, so the screen reads as recessed into it
+ *   .pad-screen  the panel itself, with a faint vignette so the corners are
+ *                a touch darker than the centre the way real LCDs are
+ *   .pad-ui      the interface: headline, live stat, Gary, status rail
+ *   .pad-grain   a sub-pixel grid over the whole screen, at 6% — the thing
+ *                that makes it read as a display instead of a white card
+ *   .pad-glare   a diagonal glass reflection that drifts, slowly
+ *
+ * The whole device is tilted 6deg in 3D and the tilt is NOT animated. A
+ * floating, bobbing tablet reads as a UI mockup; one that is simply mounted
+ * at an angle reads as a thing in a car.
+ * ======================================================================== */
+/* Anchored to the TOP of the hero, beside the wordmark — not vertically
+ * centred. The hero grew tall once the contract and rewards panels moved
+ * into it, and a centred device lands squarely on top of the rewards copy.
+ * The genuinely empty space is the right half of the headline block. */
+.pad {
+  position: absolute; right: -14px; top: 10px;
+  width: clamp(300px, 30vw, 420px);
+  transform: perspective(1400px) rotateY(-9deg) rotateX(3deg);
+  transform-origin: 60% 50%;
+  z-index: 1; pointer-events: none;
+  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, .6));
+}
+.pad-shell {
+  position: relative; padding: 11px;
+  border-radius: 22px;
+  background:
+    linear-gradient(160deg, #2a3430 0%, #131a17 38%, #0c110e 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .16),      /* light catching the top edge */
+    inset 0 -1px 0 rgba(0, 0, 0, .8),
+    inset 0 0 0 1px rgba(0, 0, 0, .55);
+}
+/* A hairline seam where the glass meets the bezel — it is what makes the
+ * screen look recessed rather than printed onto the frame. */
+.pad-shell::after {
+  content: ""; position: absolute; inset: 9px; border-radius: 15px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .9), inset 0 1px 2px rgba(0, 0, 0, .7);
+  pointer-events: none;
+}
+.pad-screen {
+  position: relative; overflow: hidden;
+  border-radius: 13px;
+  aspect-ratio: 16 / 10.2;
+  background:
+    radial-gradient(120% 90% at 50% 40%, #f3f5f1 0%, #e8ebe6 70%, #d9ddd7 100%);
+  /* The panel's own glow, spilling onto the bezel. A lit screen lights its
+   * surroundings; a screen that does not is a printout. */
+  box-shadow: 0 0 40px rgba(240, 243, 238, .12);
+  animation: ggPadOn 1.1s cubic-bezier(.2, .9, .2, 1) both;
+}
+@keyframes ggPadOn {
+  0%   { opacity: 0; filter: brightness(2.4) saturate(0); transform: scaleY(.02); }
+  35%  { opacity: 1; filter: brightness(1.8) saturate(.2); transform: scaleY(1); }
+  100% { opacity: 1; filter: brightness(1) saturate(1); transform: scaleY(1); }
+}
+.pad-ui {
+  position: absolute; inset: 0; padding: 7% 7% 6%;
+  color: #14181a;
+  display: flex; flex-direction: column;
+}
+.pad-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 6%; }
+/* The system face on a dash display is a plain, friendly sans — not the
+ * deck's HUD type. The screen is another product with its own voice, and
+ * letting the deck's chrome leak onto it would make it a widget, not a
+ * device. */
+.pad-line {
+  margin: 0; font: 600 clamp(15px, 1.5vw, 21px)/1.12 var(--gg-display);
+  letter-spacing: -.02em; color: #14181a;
+}
+.pad-stat { text-align: right; flex: 0 0 auto; }
+.pad-stat b {
+  display: block; font: 800 clamp(26px, 2.7vw, 38px)/1 var(--gg-display);
+  letter-spacing: -.03em; color: #14181a; font-variant-numeric: tabular-nums;
+}
+.pad-stat b.down { color: #b23a2b; }
+.pad-stat span {
+  display: block; margin-top: 4px;
+  font: 500 clamp(9px, .8vw, 11px)/1 var(--gg-display); color: #5a625e;
+}
+/* Gary is BIG and anchored to the bottom edge so it crops him at the shorts,
+ * the way a character sits on a real dash screen — not floated whole in a
+ * corner like a sticker. His head clears the stat because the stat owns the
+ * top 24% of the panel and he starts below it. */
+/* SIZING IS ARITHMETIC, NOT TASTE. The canvas is 46x48 cells on a 16:10.2
+ * screen, so his rendered height is width x 1.64. At 52% width he is 85% of
+ * the screen tall; pulling him 20% below the bottom edge crops him at the
+ * shorts and puts the top of his head at 35% — clear of the stat, which owns
+ * the top 26%. The previous 58% / -3% put his head at 2% and straight over
+ * the number. Change the width and the bottom offset TOGETHER. */
+.pad-gary {
+  position: absolute; right: 13%; bottom: -20%;
+  width: 52%; height: auto;
+  image-rendering: pixelated; image-rendering: crisp-edges;
+}
+.pad-foot {
+  margin-top: auto; display: inline-flex; align-items: center; gap: 7px;
+  font: 600 clamp(9px, .8vw, 11px)/1 var(--gg-display); color: #3f4744;
+}
+.pad-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #2e9e8f;
+  box-shadow: 0 0 0 3px rgba(46, 158, 143, .18);
+  animation: ggPulse 2s ease-in-out infinite;
+}
+/* The sub-pixel grid. 6% is the number: at 10% it is a screen-door, at 3%
+ * it is invisible and the panel reads as paper again. */
+.pad-grain {
+  position: absolute; inset: 0; pointer-events: none; opacity: .06;
+  background:
+    repeating-linear-gradient(90deg, #000 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(180deg, #000 0 1px, transparent 1px 3px);
+}
+/* The glass. A soft diagonal band of reflected light that drifts across the
+ * panel over half a minute — slow enough that nobody sees it move, fast
+ * enough that the screen is never in the same state twice. */
+.pad-glare {
+  position: absolute; inset: -40%; pointer-events: none;
+  background: linear-gradient(115deg,
+    transparent 38%, rgba(255, 255, 255, .28) 46%, rgba(255, 255, 255, .06) 52%, transparent 60%);
+  animation: ggGlare 34s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+}
+@keyframes ggGlare { from { transform: translateX(-18%) } to { transform: translateX(18%) } }
+.pad-mount {
+  margin: 0 auto; width: 34%; height: 26px;
+  background: linear-gradient(180deg, #0f1512, #070a08);
+  border-radius: 0 0 10px 10px;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .06), 0 14px 18px rgba(0, 0, 0, .5);
+  clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pad-screen { animation: none; }
+  .pad-glare { animation: none; }
+  .pad-dot { animation: none; }
+}
+/* Below two columns the hero copy needs its full width, and a device behind
+ * the contract address is worse than no device. */
+@media (max-width: 1080px) { .pad { display: none; } }
+
 /* Context majors under the hero — a horizontal rail, not a spec list. */
 .majors {
   display: flex; gap: 24px; flex-wrap: wrap; margin-top: 26px;
