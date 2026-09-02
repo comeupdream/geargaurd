@@ -74,3 +74,27 @@ def test_deepest_pool_wins() -> None:
 
 def test_empty_pair_list_is_no_pool() -> None:
     assert TokenFeed()._pick([])["status"] == "no_pool"
+
+
+def test_live_pair_chain_overrides_the_configured_label(monkeypatch) -> None:
+    """What the pool says beats what the config guessed.
+
+    The configured chain is a declared label; the quoting pair reports the
+    chain the token is actually trading on. If they disagree, the page must
+    show the measurement — a stale config string next to a live price is how
+    a visitor ends up looking for the token on the wrong explorer.
+    """
+    monkeypatch.setattr(settings, "token_chain", "solana")
+    result = TokenFeed()._pick(
+        [{"priceUsd": "1.00", "liquidity": {"usd": 50_000.0},
+          "dexId": "deep", "chainId": "base"}]
+    )
+    assert result["chain"] == "base"
+
+
+def test_chain_falls_back_to_the_label_when_upstream_omits_it() -> None:
+    """A missing chainId must not blank a field that has an honest answer."""
+    result = TokenFeed()._pick(
+        [{"priceUsd": "1.00", "liquidity": {"usd": 50_000.0}, "dexId": "deep"}]
+    )
+    assert result["chain"] == settings.token_chain

@@ -58,9 +58,34 @@ Two things to know before you apply:
    from the backend's own service page, and redeploy the site after any rename
    or custom domain.
 
-Set `TOKEN_CONTRACT` in the dashboard when the mint exists. Until then the API
-answers `status="unset"` and the deck says **CONTRACT NOT SET** — no redeploy
-of the site is needed to go live, only that one variable.
+`TOKEN_CONTRACT` ships set to the live contract. Blank is still a supported,
+honest state: the API then answers `status="unset"` and the deck says
+**CONTRACT NOT SET** rather than inventing a price.
+
+### The contract address lives in two places, and they must match
+
+`site/index.html` carries the address a visitor copies out of the hero.
+`TOKEN_CONTRACT` carries the address the price is read from. They come from
+different places — the page vs. the backend's environment — so they *can*
+drift, and a page that hands out one address while quoting another is the
+worst thing this deck could do to someone.
+
+Two defences, and you want both:
+
+- **Change them together, always.** Nothing syncs them for you.
+- **The page checks itself.** On every poll `token.js` compares the address in
+  the hero against the one the backend reports and, if they disagree, raises a
+  red mismatch warning naming both. It fails loud rather than quietly showing
+  two different strings in two parts of the same page.
+
+The address is rendered **verbatim, mixed case and all** — that casing is the
+EIP-55 checksum, and lower-casing it for tidiness throws away the one thing
+that catches a mistyped or swapped address.
+
+`TOKEN_CHAIN` is only a **display label and a fallback**. The upstream looks a
+contract up across every chain it indexes, so it narrows nothing — and when a
+live pool answers, the chain that pool actually trades on replaces the
+configured string in the response. The measurement wins over the config.
 
 ## Run it locally
 

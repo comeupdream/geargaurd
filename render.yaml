@@ -53,19 +53,27 @@ services:
         value: "3.11.9"
 
       # --- the token -------------------------------------------------------
-      # TOKEN_CONTRACT is deliberately BLANK. With no contract set the API
-      # answers status="unset" and the deck renders "CONTRACT NOT SET" — a
-      # launch page that shows a price before the token exists is the one
-      # thing this project refuses to be. Fill it in from the dashboard the
-      # moment the mint is live; no redeploy of the site is needed for this.
+      # The contract the readout quotes. It is also printed in the hero as a
+      # copy-paste address, so THESE TWO MUST MATCH: site/index.html carries
+      # the string a visitor copies, and this carries the one the price is
+      # read from. If they ever drift, the page quotes one token and hands
+      # out the address of another — change both together, always.
+      #
+      # Blank is still a supported, honest state: the API then answers
+      # status="unset" and the deck renders "CONTRACT NOT SET" rather than
+      # inventing a price.
       - key: TOKEN_NAME
         value: "Gear Guard Gary"
       - key: TOKEN_SYMBOL
         value: "RIVN"
-      - key: TOKEN_CHAIN
-        value: "solana"
       - key: TOKEN_CONTRACT
-        sync: false
+        value: "0x401923511EC7356AeC6b7717207394feA97CEa01"
+      # A declared LABEL and a fallback only. The upstream looks a contract up
+      # across every chain it indexes, so this narrows nothing — and when a
+      # live pool answers, the chain it actually trades on replaces this
+      # string in the response.
+      - key: TOKEN_CHAIN
+        value: "robinhood"
 
       # A pool shallower than this is reported as too thin to quote rather
       # than printed. Raise it once the pool is real: the floor exists so a

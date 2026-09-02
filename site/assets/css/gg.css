@@ -177,6 +177,82 @@ p { margin: 0 0 14px; }
 .btn-go { background: var(--gg-compass); border-color: var(--gg-compass); color: #10130a; }
 .btn-go:hover { border-color: var(--gg-compass); color: #10130a; filter: brightness(1.07); }
 
+/* ---------- hero panels: the contract address and the holder rewards -------
+ * These two are the first thing a visitor actually needs, so they sit in the
+ * hero rather than in a section further down. */
+.hero-panels {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px; margin-top: 28px; max-width: 920px;
+  /* Each panel sizes to its own content. Stretching the short address panel
+   * to match the taller rewards panel leaves it half empty, which reads as a
+   * card that failed to load rather than one that is simply brief. */
+  align-items: start;
+}
+.panel-lite {
+  background: var(--gg-panel); border: 1px solid var(--gg-line);
+  border-radius: 12px; padding: 16px 18px 14px; min-width: 0;
+}
+.panel-k {
+  font: 600 10px/1 var(--gg-mono); letter-spacing: .22em; text-transform: uppercase;
+  color: var(--gg-alloy); margin-bottom: 11px;
+}
+.panel-note { font-size: 11.5px; line-height: 1.65; color: var(--gg-muted); margin: 12px 0 0; }
+.panel-note em { color: var(--gg-ink); font-style: normal; }
+
+/* The address row is one big button — the whole thing is the copy target,
+ * because a 42-character string is not something anyone wants to select by
+ * hand on a phone. `break-all` because it is hex, not words: there is no
+ * sensible break point, and letting it overflow would widen the page. */
+.ca-row {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  text-align: left; cursor: pointer;
+  background: var(--gg-panel-2); border: 1px solid var(--gg-line);
+  border-radius: 9px; padding: 11px 12px;
+  transition: border-color .18s;
+}
+.ca-row:hover, .ca-row:focus-visible { border-color: var(--gg-compass); }
+.ca-row code {
+  flex: 1 1 auto; min-width: 0;
+  font: 600 12px/1.45 var(--gg-mono); color: var(--gg-ink);
+  word-break: break-all;
+}
+.ca-act {
+  flex: 0 0 auto;
+  font: 700 10px/1 var(--gg-mono); letter-spacing: .16em; text-transform: uppercase;
+  color: var(--gg-compass); border: 1px solid currentColor;
+  border-radius: 6px; padding: 7px 9px;
+}
+/* Confirmation flips to the charge colour: "done" is a different state from
+ * "do this", and reusing the go colour for both makes the click feel inert. */
+.ca-row.done .ca-act { color: var(--gg-charge); }
+.ca-row.failed .ca-act { color: var(--gg-danger); }
+
+/* Shown only when the address in the page and the address the readout is
+ * actually pricing disagree. That is the one failure on a token page worth
+ * shouting about, so it gets the danger colour rather than the muted note
+ * treatment. */
+.ca-warn {
+  margin: 10px 0 0; padding: 9px 11px; border-radius: 8px;
+  border: 1px solid var(--gg-danger);
+  background: rgba(255, 90, 77, .08);
+  font: 600 11.5px/1.6 var(--gg-mono); color: var(--gg-danger);
+}
+
+.rw-lede { font-size: 15px; line-height: 1.5; margin: 0 0 10px; color: var(--gg-ink); }
+.rw-hit { color: var(--gg-compass); }
+.rw-list { list-style: none; margin: 0; padding: 0; }
+.rw-list li {
+  position: relative; padding-left: 16px; margin-bottom: 7px;
+  font-size: 13px; line-height: 1.55; color: var(--gg-muted);
+}
+.rw-list li::before {
+  content: ""; position: absolute; left: 0; top: .55em;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--gg-charge);
+}
+.rw-list li b { color: var(--gg-ink); font-weight: 600; }
+
+@media (max-width: 780px) { .hero-panels { grid-template-columns: 1fr; } }
+
 /* ---------- sections ------------------------------------------------------- */
 section { padding: 66px 0; position: relative; }
 section .wrap { position: relative; }

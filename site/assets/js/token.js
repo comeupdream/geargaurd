@@ -77,7 +77,30 @@ function paintToken(tok, limits) {
             live ? (stale ? 'Feed stale' : 'Feed live') : STATUS_TEXT[status] || 'Feed dark');
 
   setText('tokPair', tok.symbol ? '$' + tok.symbol : '$--');
+  /* tok.chain is the chain the QUOTING POOL reports when there is one, and
+   * the configured label otherwise — so this row follows the measurement. */
   setText('tokChainRow', (tok.chain || '--').toUpperCase());
+
+  /* The address printed in the hero is the one visitors copy; tok.contract is
+   * the one the price is actually read from. They come from two different
+   * places (the page vs. the backend's environment), so they CAN drift — and
+   * a page that hands out one address while quoting another is the single
+   * worst thing this deck could do to someone. Compare them every poll and
+   * say so loudly rather than quietly showing both.
+   *
+   * Compared case-insensitively: EIP-55 casing is a checksum, not identity. */
+  var heroCa = $('caText'), caWarn = $('caWarn');
+  if (heroCa && caWarn) {
+    var shown = (heroCa.textContent || '').trim().toLowerCase();
+    var quoted = String(tok.contract || '').trim().toLowerCase();
+    var mismatch = !!shown && !!quoted && shown !== quoted;
+    caWarn.hidden = !mismatch;
+    if (mismatch) {
+      caWarn.textContent =
+        'Address mismatch — the readout is pricing ' + tok.contract +
+        ', which is NOT the address above. Do not use either until this is resolved.';
+    }
+  }
   setText('tokContract', tok.contract || 'not set');
 
   if (!live) {

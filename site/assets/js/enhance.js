@@ -128,6 +128,60 @@ GG.gauge = function (host, v, text, tone) {
  * the first fetch lands instead of showing a zero it has not measured. */
 document.querySelectorAll('.gauge').forEach(function (g) { GG.gauge(g, null, '--', '#8fa099'); });
 
+/* ---------- 4: copy the contract address -----------------------------------
+ * Two paths on purpose. navigator.clipboard is the good one, but it only
+ * exists in a SECURE CONTEXT — so it is missing over plain http, which is
+ * exactly how someone previewing the built site on a LAN address will load
+ * it, and a dead copy button on a token page is worse than no button. The
+ * execCommand fallback works there.
+ *
+ * The address is read from the DOM rather than duplicated here: one copy of
+ * the string in the page means the button can never hand out a different
+ * address from the one on screen, which is the whole failure mode worth
+ * engineering against. */
+var caBtn = document.getElementById('caCopy');
+var caText = document.getElementById('caText');
+var caAct = document.getElementById('caAct');
+
+function legacyCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  /* Off-screen but still focusable — display:none would not be selectable. */
+  ta.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.select();
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+if (caBtn && caText && caAct) {
+  var caTimer = null;
+  caBtn.addEventListener('click', function () {
+    var text = caText.textContent.trim();
+    var settle = function (ok) {
+      caBtn.classList.toggle('done', ok);
+      caBtn.classList.toggle('failed', !ok);
+      /* On failure, say what to do instead — "Failed" alone leaves the visitor
+       * with a 42-character string and no next step. */
+      caAct.textContent = ok ? 'Copied' : 'Select it';
+      clearTimeout(caTimer);
+      caTimer = setTimeout(function () {
+        caBtn.classList.remove('done', 'failed');
+        caAct.textContent = 'Copy';
+      }, 2200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { settle(true); },
+                                              function () { settle(legacyCopy(text)); });
+    } else {
+      settle(legacyCopy(text));
+    }
+  });
+}
+
 /* ---------- year stamp ----------------------------------------------------- */
 var yr = document.getElementById('yr');
 if (yr) yr.textContent = new Date().getFullYear();

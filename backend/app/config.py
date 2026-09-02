@@ -17,14 +17,20 @@ class Settings(BaseSettings):
     app_name: str = "GEAR GUARD GARY"
 
     # --- the token -----------------------------------------------------------
-    # Contract is deliberately BLANK by default. A token page that invents a
-    # price before the contract exists is the exact failure this wing must not
-    # have: with no contract set, /api/token answers status="unset" and the
-    # deck renders "CONTRACT NOT SET" instead of a number.
+    # The contract the deck quotes. Leaving it BLANK is still fully supported
+    # and still the honest empty state: /api/token then answers status="unset"
+    # and the deck renders "CONTRACT NOT SET" rather than inventing a price.
     token_name: str = "Gear Guard Gary"
     token_symbol: str = "RIVN"
-    token_chain: str = "solana"     # DexScreener chain slug (solana, base, ethereum, ...)
-    token_contract: str = ""        # the mint / contract address — set to go live
+    token_contract: str = "0x401923511EC7356AeC6b7717207394feA97CEa01"
+
+    # A DECLARED label only, and a fallback at that. The DexScreener token
+    # endpoint looks a contract up across every chain it indexes, so nothing
+    # here narrows or filters the search — and when a live pair answers, the
+    # chain it actually trades on overrides this string in the response. A
+    # config value that disagrees with the pool must never be what the page
+    # shows: the measurement wins.
+    token_chain: str = "robinhood"
 
     # A pool shallower than this is noise, not a price (the wallet wing's
     # "a shallow pool is not a price" rule, same threshold discipline).

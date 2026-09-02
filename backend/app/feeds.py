@@ -174,6 +174,14 @@ class TokenFeed(_Reader):
             "volume_24h_usd": _num(volume.get("h24")),
             "change_1h_pct": _num(change.get("h1")),
             "change_24h_pct": _num(change.get("h24")),
+            # The chain the quoting pool ACTUALLY trades on, straight from the
+            # upstream. snapshot() merges this dict OVER the configured values,
+            # so this overrides the token_chain label — a config string that
+            # disagrees with the pool is a stale guess, and the measurement is
+            # the thing worth showing. Falls back to the configured label
+            # rather than to None, which would blank a field that has an
+            # honest answer.
+            "chain": best.get("chainId") or settings.token_chain,
             # Which pair actually answered — the audit trail for the number.
             "pair": {
                 "dex": best.get("dexId"),

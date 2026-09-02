@@ -67,6 +67,48 @@
       <a class="btn" href="#rig">Pull the rig apart</a>
       <span class="lamp" data-live data-state="idle">Connecting…</span>
     </div>
+
+    <div class="hero-panels">
+      <!-- Contract address, rendered VERBATIM — mixed case and all. The casing
+           IS the EIP-55 checksum, so lower-casing it to look tidier would throw
+           away the one thing that catches a mistyped or swapped address. -->
+      <div class="panel-lite">
+        <div class="panel-k">Contract address · $RIVN</div>
+        <button type="button" class="ca-row" id="caCopy"
+                aria-label="Copy the contract address to the clipboard">
+          <code id="caText">0x401923511EC7356AeC6b7717207394feA97CEa01</code>
+          <span class="ca-act" id="caAct">Copy</span>
+        </button>
+        <p class="ca-warn" id="caWarn" hidden></p>
+        <p class="panel-note">
+          Shown exactly as it must be pasted — the mixed case <em>is</em> the
+          checksum. Check it against the pool the readout links to before you
+          send anything anywhere.
+        </p>
+      </div>
+
+      <!-- Holder rewards. -->
+      <div class="panel-lite">
+        <div class="panel-k">Holder rewards</div>
+        <p class="rw-lede">
+          Hold <b>$RIVN</b>, receive <b class="rw-hit">tokenized RIVN stock</b>
+          on Robinhood Chain.
+        </p>
+        <ul class="rw-list">
+          <li><b>Nothing to claim.</b> No claim button, no dashboard to visit, no transaction to sign.</li>
+          <li><b>Dispersed automatically.</b> Distributions are pushed straight to holder addresses.</li>
+          <li><b>Holding is the whole qualification.</b> Your balance is what counts you in.</li>
+        </ul>
+        <p class="panel-note">
+          A stated mechanism, not yet an on-chain fact — the same standing as
+          every “at launch” row on the spec plate. It becomes checkable the
+          moment a distribution lands against this contract, and this page will
+          not claim otherwise before then. A tokenized equity is not the
+          underlying share.
+        </p>
+      </div>
+    </div>
+
     <div class="rows mono" id="majors" style="display:flex;gap:22px;flex-wrap:wrap;margin-top:26px;color:var(--gg-muted);font-size:11.5px">
       <span class="r"><span>ORACLE</span><b>—</b></span>
     </div>
@@ -194,6 +236,8 @@
           <div class="r"><span>BUY / SELL TAX</span><b>0% / 0%</b></div>
           <div class="r"><span>MINT AUTHORITY</span><b>to be revoked at launch</b></div>
           <div class="r"><span>LP</span><b>to be locked at launch</b></div>
+          <div class="r"><span>HOLDER REWARD</span><b>tokenized RIVN · Robinhood Chain</b></div>
+          <div class="r"><span>DISTRIBUTION</span><b>automatic · no claim</b></div>
           <div class="r"><span>QUOTE FLOOR</span><b id="tokFloor">—</b></div>
         </div>
         <p style="margin-top:12px;font-size:12.5px">
@@ -264,13 +308,22 @@
         chain instead of something you are asked to believe.</p>
       </div>
       <div class="leg">
-        <h4>Leg 03 — The locker</h4>
+        <h4>Leg 03 — First distribution</h4>
+        <div class="when">After leg 02</div>
+        <p>The holder reward, actually paid: tokenized RIVN pushed to holder
+        addresses on Robinhood Chain, with nothing to claim. Until a
+        distribution transaction exists against the contract, that row on the
+        spec plate is a commitment like any other — this is the leg that turns
+        it into something you can look up.</p>
+      </div>
+      <div class="leg">
+        <h4>Leg 04 — The locker</h4>
         <div class="when">After leg 02</div>
         <p>Publish the treasury address so the Gear Locker row on the spec plate
         reads from the chain rather than from this file.</p>
       </div>
       <div class="leg">
-        <h4>Leg 04 — Gear Guard</h4>
+        <h4>Leg 05 — Gear Guard</h4>
         <div class="when">Unscheduled</div>
         <p>The sentry, doing the thing it is named for: watching the pool and
         the locker and reporting what changed. Still read-only — a watcher that
@@ -292,14 +345,27 @@
         manufacturer, and it uses no manufacturer's trademarks, logos or
         vehicle designs. The rig on this page is an original wireframe drawing
         of a generic three-row electric SUV.</p>
-        <p><b>$RIVN here is a token ticker, not a stock.</b> It is not, and
-        confers no claim on, the RIVN equity listed on NASDAQ. If you came here
-        looking to buy shares in a car company, this is not that — close this
-        page and use a broker.</p>
-        <p><b>Nothing here is financial advice.</b> Tokens like this one can go
-        to zero. Every figure marked “at launch” on this page is a stated
-        intention, not a verified on-chain fact. Verify the contract yourself
-        before sending anyone anything.</p>
+        <p><b>Not affiliated with Robinhood Markets, Inc.</b> Robinhood Chain is
+        named here only to say which network the holder reward is denominated
+        on. Nothing on this page is issued, endorsed, processed or reviewed by
+        Robinhood.</p>
+        <p><b>The $RIVN token is not a stock.</b> Buying it is not buying shares
+        in a car company: the token itself confers no ownership of, and no
+        claim on, the RIVN equity listed on NASDAQ. If shares are what you
+        came for, close this page and use a broker.</p>
+        <p><b>The holder reward is a stated mechanism, not a verified fact.</b>
+        Distribution of tokenized RIVN to holders is the project's declared
+        intention and has the same standing as every “at launch” row on the
+        spec plate. It has not been demonstrated on chain, no amount, rate or
+        schedule is promised, and a tokenized equity is in any case a distinct
+        instrument from the underlying share, with its own issuer and its own
+        risks. Do not buy this token on the expectation of receiving anything.</p>
+        <p><b>Nothing here is financial advice, and none of it is an offer or
+        solicitation to buy or sell any security.</b> Tokens like this one can
+        go to zero. Verify the contract yourself before sending anyone
+        anything, and take your own legal and tax advice — depending on where
+        you live, an arrangement that pays equity to token holders may be
+        regulated as a securities offering.</p>
         <p style="color:var(--gg-muted)">© <span id="yr">2026</span> Gear Guard Gary · read-only deck · nothing signs here</p>
       </div>
     </div>
