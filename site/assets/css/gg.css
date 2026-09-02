@@ -1,0 +1,383 @@
+/* =============================================================================
+ * gg.css — GEAR GUARD GARY ($RIVN) deck theme.
+ *
+ * Two lineages, deliberately fused — the same method the station's own decks
+ * use, retuned for an electric-adventure brand instead of a speed shop:
+ *
+ *   XAT RACING "Night Shift at the Speed Shop" -> the DISCIPLINE. Near-black
+ *     surfaces; accents used as LIGHT, not paint; ONE go-color spent only on
+ *     "go" moments; faint oversized numbers behind section heads that FILL
+ *     bottom-up as the section scrolls through; a recurring horizon streak;
+ *     mono for anything that smells like a spec sheet.
+ *   RIVIAN-ADJACENT ADVENTURE-EV -> the SUBJECT. Compass yellow as the single
+ *     signal color, charge green as the battery light, a cool structural blue
+ *     standing in for brushed alloy, and gear teeth where the racing lineage
+ *     used venetian slats.
+ *
+ * Three translations from the XAT original, made on purpose:
+ *
+ *  1. THE TANK BECAME A BATTERY. XAT's ghost livery numbers fill with a fuel
+ *     ramp (racing neon -> chrome blue). Here the same bottom-up fill is a
+ *     STATE OF CHARGE: charge green at the bottom, compass yellow at the top,
+ *     because an EV's number that fills is a battery, not a fuel tank.
+ *  2. THE TYPE IS UPRIGHT, NOT ITALIC. XAT's shear echoes a logo built on a
+ *     -14deg skew. Nothing here is skewed, so an italic livery number would be
+ *     borrowed attitude. The line-height: 1.3 note below still applies and is
+ *     the reason the fill reaches the cap tops.
+ *  3. SLATS BECAME GEAR TEETH. Same idea (one procedural band pattern used as
+ *     the brand's texture), different tooling.
+ *
+ * ONE GO COLOR RULE: --gg-compass is live status, the primary CTA, and a
+ * charged battery. It is never chrome, never a border for decoration, never a
+ * hover tint. Scarcity is the whole point — spend it and the page goes flat.
+ * ===========================================================================*/
+
+:root {
+  /* surfaces — near-black with a graphite-green cast, not pure neutral */
+  --gg-void: #0a0e0c;
+  --gg-panel: #111714;
+  --gg-panel-2: #161e1a;
+  --gg-line: #232d28;
+  --gg-ink: #e7ede9;
+  --gg-muted: #8fa099;      /* 5.9:1 on --gg-void — passes AA as body text */
+
+  /* light, not paint */
+  --gg-compass: #ffd400;    /* THE go color: live, CTA, full charge */
+  --gg-charge: #3fd98a;     /* battery light, gains, drive units */
+  --gg-alloy: #6ea8d8;      /* cool structural light — brushed metal stand-in */
+  --gg-signal: #ff7a45;     /* Gear Guard only: sentry, alerts, the mascot */
+  --gg-danger: #ff5a4d;
+
+  --gg-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --gg-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+body {
+  margin: 0;
+  background: var(--gg-void);
+  color: var(--gg-ink);
+  font: 15px/1.6 var(--gg-display);
+  overflow-x: hidden;        /* decorative absolutes must never widen the page */
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+img, svg, canvas { display: block; max-width: 100%; }
+h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -.01em; }
+p { margin: 0 0 14px; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 22px; }
+.mono { font-family: var(--gg-mono); }
+
+/* ---------- gear-tooth band ------------------------------------------------
+ * The brand's texture, generated rather than drawn: one repeating gradient,
+ * reused as section dividers, panel edges and skeleton states. (XAT's slats,
+ * re-cut as gear teeth.) */
+.teeth {
+  height: 6px;
+  background: repeating-linear-gradient(90deg,
+    var(--gg-line) 0 7px, transparent 7px 14px);
+  opacity: .8;
+}
+
+/* ---------- horizon streak — the recurring motif -------------------------- */
+.horizon {
+  height: 1px; border: 0; margin: 0;
+  background: linear-gradient(90deg, transparent,
+    rgba(110, 168, 216, .16) 30%, rgba(110, 168, 216, .34) 50%,
+    rgba(110, 168, 216, .16) 70%, transparent);
+}
+
+/* ---------- header --------------------------------------------------------- */
+.topnav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10, 14, 12, .93); backdrop-filter: blur(9px);
+  border-bottom: 1px solid var(--gg-line);
+}
+.topnav .wrap { display: flex; align-items: center; gap: 22px; height: 62px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand svg { width: 30px; height: 30px; }
+/* nowrap is load-bearing: the wordmark wrapped to three lines on a 390px
+ * viewport, which tripled the nav height and pushed the whole page down. */
+.brand b { font: 800 16px/1 var(--gg-display); letter-spacing: .10em; text-transform: uppercase; white-space: nowrap; }
+.brand b i { font-style: normal; color: var(--gg-compass); }
+.brand .tick {
+  font: 600 10px/1 var(--gg-mono); letter-spacing: .16em; color: var(--gg-muted);
+  border: 1px solid var(--gg-line); border-radius: 999px; padding: 4px 7px;
+}
+.topnav nav { display: flex; gap: 18px; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+.topnav nav::-webkit-scrollbar { display: none; }
+.topnav nav a {
+  font: 600 11px/1 var(--gg-mono); letter-spacing: .16em; text-transform: uppercase;
+  color: var(--gg-muted); padding: 8px 2px; border-bottom: 2px solid transparent;
+  white-space: nowrap; transition: color .18s, border-color .18s;
+}
+.topnav nav a:hover { color: var(--gg-ink); border-color: var(--gg-alloy); }
+
+/* charge bar — reading progress as a state-of-charge readout, docked under the
+ * sticky nav. `top: 100%` rides the nav's REAL height, so a taller nav on a
+ * phone can't strand the bar mid-header. */
+.charge-progress {
+  position: absolute; left: 0; right: 0; top: 100%; height: 2px;
+  background: rgba(35, 45, 40, .8); overflow: hidden;
+}
+.charge-progress i {
+  display: block; height: 100%; width: 100%;
+  transform: scaleX(0); transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--gg-charge), var(--gg-compass));
+}
+
+/* ---------- status lamp ---------------------------------------------------- */
+.lamp {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: 600 10px/1 var(--gg-mono); letter-spacing: .18em; text-transform: uppercase;
+  color: var(--gg-muted);
+}
+.lamp::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--gg-muted); box-shadow: 0 0 0 3px rgba(143, 160, 153, .12);
+}
+.lamp[data-state="live"] { color: var(--gg-compass); }
+.lamp[data-state="live"]::before { background: var(--gg-compass); box-shadow: 0 0 0 3px rgba(255, 212, 0, .16); }
+.lamp[data-state="stale"] { color: var(--gg-signal); }
+.lamp[data-state="stale"]::before { background: var(--gg-signal); box-shadow: 0 0 0 3px rgba(255, 122, 69, .16); }
+.lamp[data-state="dark"] { color: var(--gg-danger); }
+.lamp[data-state="dark"]::before { background: var(--gg-danger); box-shadow: 0 0 0 3px rgba(255, 90, 77, .16); }
+
+/* ---------- hero ----------------------------------------------------------- */
+.hero { position: relative; padding: 84px 0 54px; overflow: hidden; }
+.hero::before {
+  content: ""; position: absolute; inset: -40% 0 auto 0; height: 90%;
+  background: radial-gradient(60% 60% at 50% 0%, rgba(255, 212, 0, .07) 0%, transparent 62%),
+              radial-gradient(70% 50% at 20% 20%, rgba(63, 217, 138, .05) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero .wrap { position: relative; }
+.eyebrow {
+  font: 600 10px/1 var(--gg-mono); letter-spacing: .34em; text-transform: uppercase;
+  color: var(--gg-alloy); margin-bottom: 16px;
+}
+.hero h1 {
+  font-size: clamp(38px, 7.4vw, 86px); line-height: .96; text-transform: uppercase;
+  letter-spacing: -.02em;
+}
+.hero h1 em { font-style: normal; color: var(--gg-compass); }
+.hero .lede { max-width: 60ch; margin-top: 18px; color: var(--gg-muted); font-size: 16px; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 700 12px/1 var(--gg-mono); letter-spacing: .16em; text-transform: uppercase;
+  padding: 13px 20px; border-radius: 8px; border: 1px solid var(--gg-line);
+  color: var(--gg-ink); background: var(--gg-panel); transition: border-color .18s, color .18s;
+}
+.btn:hover { border-color: var(--gg-alloy); }
+/* The ONE place the go-color becomes a fill. */
+.btn-go { background: var(--gg-compass); border-color: var(--gg-compass); color: #10130a; }
+.btn-go:hover { border-color: var(--gg-compass); color: #10130a; filter: brightness(1.07); }
+
+/* ---------- sections ------------------------------------------------------- */
+section { padding: 66px 0; position: relative; }
+section .wrap { position: relative; }
+.sec-head { position: relative; z-index: 1; display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+.sec-head h2 { font-size: clamp(22px, 3vw, 34px); text-transform: uppercase; }
+.sec-head .sub {
+  font: 600 10px/1 var(--gg-mono); letter-spacing: .22em; text-transform: uppercase;
+  color: var(--gg-muted);
+}
+.sec-head + .horizon { margin-bottom: 26px; }
+
+/* ---------- the charging livery number ------------------------------------
+ * Ported from XAT's ghost livery numbers and re-themed as a state-of-charge
+ * readout: the glyph fills bottom-up, charge green -> compass yellow, as the
+ * section travels up the viewport (enhance.js drives --fill 0..1).
+ *
+ * line-height 1.3, NOT 1: the font's ascent+descent is ~1.22em, so at
+ * line-height 1 the glyph ink overflows the box top by ~0.11em — and
+ * background-clip:text can only paint INSIDE the box, which leaves the cap
+ * tops permanently uncharged. The taller line box contains all the ink.
+ *
+ * Without JS the number renders as a static outline. That is a deliberate
+ * floor, not a broken state. */
+.livery {
+  position: absolute; top: -62px; right: 0; z-index: 0;
+  font: 800 clamp(84px, 13vw, 158px)/1.3 var(--gg-display);
+  letter-spacing: -.03em; pointer-events: none; user-select: none;
+  color: transparent;
+  --fill: 0;
+  background: linear-gradient(0deg,
+    rgba(63, 217, 138, .46) 0%,     /* charge green at the bottom of the pack */
+    rgba(140, 220, 130, .34) 42%,
+    rgba(255, 212, 0, .28) 78%,
+    rgba(255, 212, 0, .18) 100%);   /* compass yellow at full */
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% calc(var(--fill) * 100%);
+  padding-right: .04em;
+}
+/* The outline lives on its OWN layer BEHIND the fill: a stroke on the filled
+ * element straddles the glyph edge and reads as a permanently uncharged rim.
+ * Same box metrics so both texts share an origin. */
+.livery::before {
+  content: attr(data-n);
+  position: absolute; inset: 0; padding-right: .04em;
+  -webkit-text-stroke: 1px rgba(110, 168, 216, .13);
+  color: transparent;
+}
+@media (prefers-reduced-motion: reduce) { .livery { --fill: 1; } }
+
+/* ---------- cards ---------------------------------------------------------- */
+.grid { display: grid; gap: 14px; }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g2 { grid-template-columns: repeat(2, 1fr); }
+.card {
+  background: var(--gg-panel); border: 1px solid var(--gg-line);
+  border-radius: 12px; padding: 18px 18px 16px; position: relative; overflow: hidden;
+}
+.card > .teeth { position: absolute; inset: 0 0 auto 0; height: 3px; opacity: .55; }
+.card h3 {
+  font: 600 10px/1 var(--gg-mono); letter-spacing: .22em; text-transform: uppercase;
+  color: var(--gg-alloy); margin-bottom: 10px;
+}
+.card p { color: var(--gg-muted); font-size: 14px; margin: 0; }
+
+/* stat plate — mono, because it is a spec sheet */
+.stat { font-family: var(--gg-mono); }
+.stat .v { font-size: clamp(20px, 2.6vw, 30px); font-weight: 700; letter-spacing: -.01em; }
+.stat .v.dim { color: var(--gg-muted); font-size: 17px; letter-spacing: .04em; }
+.stat .k { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--gg-muted); margin-top: 6px; }
+.up { color: var(--gg-charge); }
+.down { color: var(--gg-danger); }
+
+/* spec rows */
+.rows { font-family: var(--gg-mono); font-size: 12.5px; }
+.rows .r {
+  display: flex; justify-content: space-between; gap: 14px;
+  padding: 9px 0; border-bottom: 1px solid var(--gg-line); color: var(--gg-muted);
+}
+.rows .r:last-child { border-bottom: 0; }
+.rows .r b { color: var(--gg-ink); font-weight: 600; text-align: right; }
+
+/* ---------- the rig (wireframe canvas) ------------------------------------- */
+.rig { position: relative; border: 1px solid var(--gg-line); border-radius: 14px; overflow: hidden; background: #080b0a; }
+.rig canvas { width: 100%; height: min(74vh, 620px); touch-action: none; cursor: grab; }
+.rig canvas:active { cursor: grabbing; }
+.rig-hud {
+  position: absolute; left: 16px; top: 14px; pointer-events: none;
+  font-family: var(--gg-mono); font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--gg-alloy);
+}
+#rigLabel {
+  position: absolute; left: 16px; bottom: 74px; font-family: var(--gg-mono);
+  font-size: 11px; letter-spacing: .18em; color: var(--gg-compass);
+}
+.rig-ctl { position: absolute; left: 16px; bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+.rig-ctl button {
+  background: rgba(17, 23, 20, .9); border: 1px solid var(--gg-line); color: var(--gg-muted);
+  font: 600 10px/1 var(--gg-mono); letter-spacing: .14em; text-transform: uppercase;
+  padding: 8px 12px; border-radius: 7px; cursor: pointer;
+}
+.rig-ctl button.on, .rig-ctl button:hover { border-color: var(--gg-compass); color: var(--gg-compass); }
+.rig-strip { position: absolute; right: 16px; bottom: 20px; width: min(240px, 42vw); accent-color: var(--gg-compass); }
+.rig-panel {
+  position: absolute; right: 16px; top: 14px; width: min(320px, 84vw);
+  display: flex; flex-direction: column; gap: 10px;
+  max-height: calc(100% - 110px); overflow-y: auto; scrollbar-width: thin;
+}
+.rig-card {
+  background: rgba(17, 23, 20, .84); backdrop-filter: blur(5px);
+  border: 1px solid var(--gg-line); border-radius: 10px; padding: 13px 15px;
+}
+.rig-card h4 {
+  font: 600 10px/1 var(--gg-mono); letter-spacing: .22em; text-transform: uppercase;
+  color: var(--gg-alloy); margin-bottom: 8px;
+}
+.ci { display: flex; justify-content: space-between; font-family: var(--gg-mono); font-size: 10.5px; padding: 2.5px 0; color: var(--gg-muted); }
+.ci b { color: var(--gg-ink); font-weight: 600; }
+#rigDossier h5 { font-size: 15px; text-transform: uppercase; margin: 0; }
+#rigDossier .spec { font-family: var(--gg-mono); font-size: 9px; letter-spacing: .16em; color: var(--gg-compass); margin: 4px 0 8px; }
+#rigDossier p { font-size: 12.5px; color: var(--gg-muted); line-height: 1.55; margin: 0; }
+#rigDossier .go { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+#rigDossier .go a { font-family: var(--gg-mono); font-size: 10.5px; letter-spacing: .1em; color: var(--gg-alloy); }
+.gchip {
+  background: none; border: 1px solid var(--gg-line); color: var(--gg-muted);
+  font: 600 9px/1 var(--gg-mono); letter-spacing: .1em; text-transform: uppercase;
+  padding: 5px 9px; border-radius: 999px; margin: 0 4px 6px 0; cursor: pointer;
+}
+.gchip.on { border-color: var(--gg-charge); color: var(--gg-charge); }
+@media (max-width: 900px) {
+  .rig-panel { display: none; }   /* phones get the rig itself, not the dossier rail */
+  .rig canvas { height: 62vh; }
+}
+
+/* ---------- charge gauges -------------------------------------------------- */
+.gauges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.gauge { text-align: center; }
+.gauge svg { margin: 0 auto; }
+.gauge .k { font: 600 10px/1 var(--gg-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--gg-muted); margin-top: 8px; }
+
+/* ---------- trail (roadmap) ------------------------------------------------ */
+.trail { position: relative; padding-left: 26px; }
+.trail::before {
+  content: ""; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 1px;
+  background: linear-gradient(var(--gg-charge), var(--gg-compass), var(--gg-line));
+  opacity: .4;
+}
+.leg { position: relative; padding: 0 0 24px; }
+.leg::before {
+  content: ""; position: absolute; left: -23px; top: 7px; width: 9px; height: 9px;
+  border-radius: 50%; background: var(--gg-void); border: 2px solid var(--gg-line);
+}
+.leg[data-state="done"]::before { border-color: var(--gg-charge); background: var(--gg-charge); }
+.leg[data-state="live"]::before { border-color: var(--gg-compass); background: var(--gg-compass); }
+.leg h4 { font-size: 15px; text-transform: uppercase; }
+.leg .when { font: 600 9.5px/1 var(--gg-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--gg-muted); margin: 5px 0 7px; }
+.leg p { color: var(--gg-muted); font-size: 13.5px; margin: 0; }
+
+/* ---------- footer --------------------------------------------------------- */
+footer { border-top: 1px solid var(--gg-line); padding: 30px 0 44px; margin-top: 30px; }
+footer .cols { display: flex; gap: 26px; flex-wrap: wrap; align-items: flex-start; }
+footer .disclaimer {
+  flex: 1 1 420px; font-family: var(--gg-mono); font-size: 11px; line-height: 1.75;
+  color: var(--gg-muted);
+}
+footer .disclaimer b { color: var(--gg-ink); }
+
+@media (max-width: 860px) {
+  .g3, .g2, .gauges { grid-template-columns: 1fr; }
+  .livery { top: -44px; }
+}
+
+/* ---------- phones -------------------------------------------------------
+ * The rig keeps every control it can actually use. The zoom buttons go: a
+ * touch screen pinches, and keeping them forced the control row to wrap onto
+ * a second line that landed on top of the field-strip label and the axis
+ * gizmo. */
+@media (max-width: 600px) {
+  .topnav .wrap { gap: 12px; }
+  .brand b { font-size: 13px; letter-spacing: .06em; }
+  .brand svg { width: 24px; height: 24px; }
+  .brand .tick { padding: 3px 5px; font-size: 9px; }
+  .rig-ctl { gap: 6px; }
+  .rig-ctl button { padding: 7px 9px; font-size: 9px; letter-spacing: .1em; }
+  #rigZi, #rigZo { display: none; }
+  #rigLabel { bottom: 90px; font-size: 10px; }
+  .rig-strip { bottom: 58px; width: min(200px, 52vw); }
+}
+
+/* ---------- the rig stage --------------------------------------------------
+ * A tall scroll stage with a sticky viewport inside it: scrolling through the
+ * section field-strips the model instead of moving past it. The height sets
+ * how much scroll the strip consumes — 220vh means the model comes apart over
+ * a little over one screen of travel, which is enough to feel deliberate
+ * without stranding a reader who just wants to get to the next section. */
+.rig-stage { position: relative; height: 220vh; }
+.rig-sticky { position: sticky; top: 62px; }
+.rig-note {
+  font-family: var(--gg-mono); font-size: 10.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--gg-muted); margin-top: 12px;
+}
+@media (max-width: 900px) { .rig-stage { height: 190vh; } }

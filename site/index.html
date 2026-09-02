@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GEAR GUARD GARY — $RIVN</title>
+<meta name="description" content="GEAR GUARD GARY ($RIVN) — an independent, gear-themed community token deck. Live readout, an interactive wireframe rig, and a stated posture: read-only, non-custodial, nothing signs here.">
+<meta name="theme-color" content="#0a0e0c">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="GEAR GUARD GARY — $RIVN">
+<meta property="og:description" content="Gear-themed community token deck. Live readout, interactive wireframe rig, honest posture.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/gg.css">
+</head>
+<body>
+
+<!-- ===================== header ===================== -->
+<header class="topnav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Gear Guard Gary — home">
+      <!-- The mark: a gear with a visor slot. Gear + guard + the light-bar
+           face of the rig, in one glyph. Drawn, not licensed. -->
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <g stroke="#6ea8d8" stroke-width="3" stroke-linecap="butt">
+          <line x1="24" y1="5"  x2="24" y2="11" transform="rotate(0 24 24)"/>
+          <line x1="24" y1="5"  x2="24" y2="11" transform="rotate(45 24 24)"/>
+          <line x1="24" y1="5"  x2="24" y2="11" transform="rotate(90 24 24)"/>
+          <line x1="24" y1="5"  x2="24" y2="11" transform="rotate(135 24 24)"/>
+          <line x1="24" y1="5"  x2="24" y2="11" transform="rotate(180 24 24)"/>
+          <line x1="24" y1="5"  x2="24" y2="11" transform="rotate(225 24 24)"/>
+          <line x1="24" y1="5"  x2="24" y2="11" transform="rotate(270 24 24)"/>
+          <line x1="24" y1="5"  x2="24" y2="11" transform="rotate(315 24 24)"/>
+        </g>
+        <circle cx="24" cy="24" r="13.5" fill="none" stroke="#6ea8d8" stroke-width="2.4"/>
+        <rect x="15" y="21.4" width="18" height="5.2" rx="2.6" fill="#ffd400"/>
+      </svg>
+      <b>GEAR GUARD <i>GARY</i></b>
+      <span class="tick">$RIVN</span>
+    </a>
+    <nav>
+      <a href="#guard">01 Guard</a>
+      <a href="#rig">02 Rig</a>
+      <a href="#drivetrain">03 Drivetrain</a>
+      <a href="#charge">04 Charge</a>
+      <a href="#trail">05 Trail</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===================== hero ===================== -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="eyebrow">Independent community project · read-only deck</div>
+    <h1>Gear Guard<br><em>Gary</em></h1>
+    <p class="lede">
+      A gear-themed community token with an adventure-EV deck: an interactive
+      wireframe rig you can pull apart, a live readout wired to real pools, and
+      a posture stated up front — <b>this site reads, it never signs</b>. There
+      is no wallet connection, no server-side key and no endpoint here that can
+      spend anything.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-go" id="buyLink" href="#charge">Check the readout</a>
+      <a class="btn" href="#rig">Pull the rig apart</a>
+      <span class="lamp" data-live data-state="idle">Connecting…</span>
+    </div>
+    <div class="rows mono" id="majors" style="display:flex;gap:22px;flex-wrap:wrap;margin-top:26px;color:var(--gg-muted);font-size:11.5px">
+      <span class="r"><span>ORACLE</span><b>—</b></span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="teeth"></div></div>
+
+<!-- ===================== 01 the guard ===================== -->
+<section id="guard">
+  <div class="wrap">
+    <span class="livery" aria-hidden="true" data-n="01">01</span>
+    <div class="sec-head"><h2>The Guard</h2><span class="sub">What Gary actually does</span></div>
+    <hr class="horizon">
+    <div class="grid g3">
+      <div class="card"><div class="teeth"></div>
+        <h3>Watches, never drives</h3>
+        <p>Gary is a sentry, not a driver. Every surface in this project reads
+        public data and reports it. Nothing here holds a key, signs a
+        transaction, or moves a balance on anyone's behalf.</p>
+      </div>
+      <div class="card"><div class="teeth"></div>
+        <h3>Quoted by contract, never by name</h3>
+        <p>The readout prices this token by its <b>contract address</b>, from
+        the deepest pool it trades in. A copycat mint using the same ticker
+        cannot inherit this quote, because the ticker is never what is looked
+        up.</p>
+      </div>
+      <div class="card"><div class="teeth"></div>
+        <h3>A shallow pool is not a price</h3>
+        <p>Any pool below the stated liquidity floor is reported as too thin to
+        quote rather than printed as a number. A fifty-dollar puddle moves 40%
+        on one buy, and a market cap built on it is fiction.</p>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card"><div class="teeth"></div>
+        <h3>A dark feed is not a zero</h3>
+        <p>When an upstream stops answering, the last good reading stays on
+        screen, visibly aged, and the status lamp turns. It is never replaced
+        by <span class="mono">$0.00</span> — the difference between "we cannot
+        see it" and "it is worthless" is the whole readout.</p>
+      </div>
+      <div class="card"><div class="teeth"></div>
+        <h3>No write path, and none planned</h3>
+        <p>The backend serves <span class="mono">GET</span> and nothing else,
+        and a test in the repository fails the build if any other method ever
+        appears. Buying happens in your own wallet on a DEX you choose — never
+        through a server sitting on a public URL.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 02 the rig ===================== -->
+<section id="rig" style="padding-bottom:0">
+  <div class="wrap">
+    <span class="livery" aria-hidden="true" data-n="02">02</span>
+    <div class="sec-head"><h2>The Rig</h2><span class="sub">Three-row electric SUV · pure math</span></div>
+    <hr class="horizon">
+  </div>
+  <div class="rig-stage" id="rigStage">
+    <div class="rig-sticky">
+      <div class="wrap">
+        <div class="rig">
+          <canvas id="rig-wire" aria-label="Interactive wireframe electric SUV — drag to rotate, scroll to field-strip, tap a part to read its dossier"></canvas>
+          <div class="rig-hud">GG_RIG_ASSY · quad motor · no images, no libraries</div>
+          <div id="rigLabel">// ASSEMBLY — INTACT</div>
+          <div class="rig-ctl">
+            <button type="button" id="rigRot">Auto-rotate</button>
+            <button type="button" id="rigShade">Shade</button>
+            <button type="button" id="rigIso">Isolate</button>
+            <button type="button" id="rigZi" aria-label="Zoom in">＋</button>
+            <button type="button" id="rigZo" aria-label="Zoom out">－</button>
+          </div>
+          <input type="range" class="rig-strip" id="rigStrip" min="0" max="100" value="0" aria-label="Field strip">
+          <div class="rig-panel">
+            <div class="rig-card"><h4>GG_RIG_ASSY.step</h4><div id="rigInfo"></div></div>
+            <div class="rig-card"><h4>Part dossier</h4>
+              <div id="rigDossier">
+                <h5>Tap any part</h5>
+                <p>Every component on this rig is drawn from numbers in one
+                file — profile points, cylinders, swept tubes and real toothed
+                gears. Tap one to read what it is and why it is here.</p>
+              </div>
+            </div>
+            <div class="rig-card"><h4>Assemblies</h4><div id="rigGroups"></div></div>
+          </div>
+        </div>
+        <p class="rig-note">Drag to rotate · scroll to field-strip · tap a part · shift+wheel to zoom</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 03 drivetrain ===================== -->
+<section id="drivetrain">
+  <div class="wrap">
+    <span class="livery" aria-hidden="true" data-n="03">03</span>
+    <div class="sec-head"><h2>Drivetrain</h2><span class="sub">Where the supply goes</span></div>
+    <hr class="horizon">
+    <div class="grid g2">
+      <div class="card"><div class="teeth"></div>
+        <h3>Drive modes — allocation</h3>
+        <div class="rows">
+          <div class="r"><span>PACK — liquidity pool</span><b>60%</b></div>
+          <div class="r"><span>TRAIL FUND — community</span><b>20%</b></div>
+          <div class="r"><span>GEAR LOCKER — treasury</span><b>10%</b></div>
+          <div class="r"><span>LISTINGS &amp; market depth</span><b>7%</b></div>
+          <div class="r"><span>CREW — vested</span><b>3%</b></div>
+        </div>
+        <p style="margin-top:12px;font-size:12.5px">
+          This is the project's <b>declared plan</b>, not an on-chain fact. It
+          becomes verifiable the moment a contract address is set here — at
+          which point the readout links straight to the pool and you can check
+          it yourself rather than take this table's word for it.
+        </p>
+      </div>
+      <div class="card"><div class="teeth"></div>
+        <h3>Spec plate</h3>
+        <div class="rows">
+          <div class="r"><span>TICKER</span><b>$RIVN</b></div>
+          <div class="r"><span>CHAIN</span><b id="tokChainRow">—</b></div>
+          <div class="r"><span>CONTRACT</span><b id="tokContract" style="word-break:break-all;font-size:10.5px">not set</b></div>
+          <div class="r"><span>BUY / SELL TAX</span><b>0% / 0%</b></div>
+          <div class="r"><span>MINT AUTHORITY</span><b>to be revoked at launch</b></div>
+          <div class="r"><span>LP</span><b>to be locked at launch</b></div>
+          <div class="r"><span>QUOTE FLOOR</span><b id="tokFloor">—</b></div>
+        </div>
+        <p style="margin-top:12px;font-size:12.5px">
+          Every row above marked <i>“at launch”</i> is a commitment, not a
+          measurement. Treat it as one until the contract row is filled in and
+          you have checked the chain yourself.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 04 charge ===================== -->
+<section id="charge">
+  <div class="wrap">
+    <span class="livery" aria-hidden="true" data-n="04">04</span>
+    <div class="sec-head"><h2>Charge</h2><span class="sub">Live readout</span></div>
+    <hr class="horizon">
+    <div class="grid g3">
+      <div class="card stat"><div class="teeth"></div>
+        <div class="v dim" id="tokPrice">--</div>
+        <div class="k">Price · <span id="tokPair">$--</span></div>
+      </div>
+      <div class="card stat"><div class="teeth"></div>
+        <div class="v dim" id="tok24h">--</div>
+        <div class="k">24 hour change</div>
+      </div>
+      <div class="card stat"><div class="teeth"></div>
+        <div class="v dim"><span class="lamp" data-live data-state="idle">Connecting…</span></div>
+        <div class="k">Feed status</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px"><div class="teeth"></div>
+      <h3>Charge cluster</h3>
+      <div class="gauges">
+        <div class="gauge" id="gDepth"><div class="dial"></div><div class="k">Pool depth · scale $250K</div></div>
+        <div class="gauge" id="gVol"><div class="dial"></div><div class="k">24h volume · scale $500K</div></div>
+        <div class="gauge" id="gMom"><div class="dial"></div><div class="k">Momentum · ±25%</div></div>
+      </div>
+      <p class="mono" id="tokStatus" style="margin-top:16px;font-size:11.5px;letter-spacing:.04em">
+        Waiting for the readout service…
+      </p>
+      <p style="margin-top:10px"><a id="tokPairLink" class="mono" hidden href="#" rel="noopener" target="_blank" style="font-size:11px;letter-spacing:.12em;color:var(--gg-alloy)">OPEN THE POOL ON THE DEX →</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 05 trail ===================== -->
+<section id="trail">
+  <div class="wrap">
+    <span class="livery" aria-hidden="true" data-n="05">05</span>
+    <div class="sec-head"><h2>The Trail</h2><span class="sub">Honest phases, no promises</span></div>
+    <hr class="horizon">
+    <div class="trail">
+      <div class="leg" data-state="done">
+        <h4>Leg 01 — The deck</h4>
+        <div class="when">Shipped</div>
+        <p>This page, the wireframe rig, and a read-only backend that quotes by
+        contract and degrades honestly when a feed goes dark. Deployable from
+        one blueprint file with no dashboard configuration.</p>
+      </div>
+      <div class="leg" data-state="live">
+        <h4>Leg 02 — Contract</h4>
+        <div class="when">Next</div>
+        <p>Mint, pair, lock. The moment the contract address is set, every
+        “at launch” row on the spec plate becomes something you can verify on
+        chain instead of something you are asked to believe.</p>
+      </div>
+      <div class="leg">
+        <h4>Leg 03 — The locker</h4>
+        <div class="when">After leg 02</div>
+        <p>Publish the treasury address so the Gear Locker row on the spec plate
+        reads from the chain rather than from this file.</p>
+      </div>
+      <div class="leg">
+        <h4>Leg 04 — Gear Guard</h4>
+        <div class="when">Unscheduled</div>
+        <p>The sentry, doing the thing it is named for: watching the pool and
+        the locker and reporting what changed. Still read-only — a watcher that
+        can act is a different product, and it is not this one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== footer ===================== -->
+<footer>
+  <div class="wrap">
+    <div class="teeth" style="margin-bottom:22px"></div>
+    <div class="cols">
+      <div class="disclaimer">
+        <p><b>Not affiliated with Rivian Automotive, Inc.</b> GEAR GUARD GARY is
+        an independent, unofficial community project. It is not endorsed by,
+        sponsored by, or connected to Rivian Automotive, Inc. or any vehicle
+        manufacturer, and it uses no manufacturer's trademarks, logos or
+        vehicle designs. The rig on this page is an original wireframe drawing
+        of a generic three-row electric SUV.</p>
+        <p><b>$RIVN here is a token ticker, not a stock.</b> It is not, and
+        confers no claim on, the RIVN equity listed on NASDAQ. If you came here
+        looking to buy shares in a car company, this is not that — close this
+        page and use a broker.</p>
+        <p><b>Nothing here is financial advice.</b> Tokens like this one can go
+        to zero. Every figure marked “at launch” on this page is a stated
+        intention, not a verified on-chain fact. Verify the contract yourself
+        before sending anyone anything.</p>
+        <p style="color:var(--gg-muted)">© <span id="yr">2026</span> Gear Guard Gary · read-only deck · nothing signs here</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="assets/js/enhance.js" defer></script>
+<script src="assets/js/gary.js" defer></script>
+<script src="assets/js/token.js" defer></script>
+</body>
+</html>

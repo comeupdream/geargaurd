@@ -1,0 +1,149 @@
+# =============================================================================
+# GEAR GUARD GARY ($RIVN) — Render blueprint.
+#
+# One-click: New -> Blueprint -> pick this repo -> Apply. Nothing in the Render
+# dashboard is required for a working deploy: there are no credentials in this
+# project, because every upstream it reads is keyless and it never writes
+# anywhere. Two services come up — a read-only FastAPI backend and a static
+# site — and the site is usable the moment the backend answers.
+#
+# ---------------------------------------------------------------------------
+# PATHS. This file lives at the repository root, which is the only place
+# Render auto-detects a blueprint — so the rootDir values below are correct as
+# written and this repo deploys with no path edits. If this project is ever
+# vendored INSIDE a larger repo (it started as a `gearguard/` directory in
+# one), it takes two changes: move this file to that repo's root and prefix
+# both rootDir values with the directory name.
+#
+# ---------------------------------------------------------------------------
+# THE ONE TRAP WORTH READING BEFORE YOU APPLY.
+#
+# The static site is served as files, so the backend's URL has to be stamped
+# into it AT BUILD TIME (site/build.sh writes config.js from API_URL). It must
+# be the backend's PUBLIC url.
+#
+# Do NOT wire it with `fromService ... property: host`. That resolves to the
+# INTERNAL service name — `gearguard-api`, with no domain — which is reachable
+# only from inside Render's private network. A browser cannot resolve it, and
+# the deck loads straight to "backend unreachable" with nothing in the logs to
+# explain why. Paste the URL shown on the backend's own service page instead,
+# and re-deploy the site after any rename or custom-domain change.
+#
+# (token.js promotes a scheme-less value to https:// so a hand-typed hostname
+# still works. It cannot rescue an unresolvable one.)
+# ---------------------------------------------------------------------------
+
+services:
+  # --- Backend: the read-only readout service ------------------------------
+  # No database. No disk. No secrets. It caches two keyless public feeds and
+  # serves JSON, and tests/test_api.py fails the moment a non-GET route
+  # appears — that is the guard on the whole posture, not a style preference.
+  - type: web
+    name: gearguard-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Pinned to the interpreter the test suite is verified against.
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+
+      # --- the token -------------------------------------------------------
+      # TOKEN_CONTRACT is deliberately BLANK. With no contract set the API
+      # answers status="unset" and the deck renders "CONTRACT NOT SET" — a
+      # launch page that shows a price before the token exists is the one
+      # thing this project refuses to be. Fill it in from the dashboard the
+      # moment the mint is live; no redeploy of the site is needed for this.
+      - key: TOKEN_NAME
+        value: "Gear Guard Gary"
+      - key: TOKEN_SYMBOL
+        value: "RIVN"
+      - key: TOKEN_CHAIN
+        value: "solana"
+      - key: TOKEN_CONTRACT
+        sync: false
+
+      # A pool shallower than this is reported as too thin to quote rather
+      # than printed. Raise it once the pool is real: the floor exists so a
+      # copycat puddle can never look like a market on this page.
+      - key: MIN_LIQUIDITY_USD
+        value: "5000"
+
+      # Context markets behind the token (Pyth Hermes, keyless). Only symbols
+      # with a verified feed id in app/feeds.py are used; unknown ones are
+      # dropped rather than guessed.
+      - key: MAJORS
+        value: "SOL/USD,ETH/USD,BTC/USD"
+
+      # Quote cache. Both upstreams are public and rate-limited, and the deck
+      # polls every 30s per visitor — the cache is what keeps a busy hour from
+      # turning into upstream 429s and a dark feed for everyone.
+      - key: CACHE_TTL_SECONDS
+        value: "30"
+
+      # "*" keeps the static site talking to the API before its URL is known.
+      # Tighten to the site's origin once the name is settled. Nothing here is
+      # authenticated and no cookies are sent, so this is a hygiene control,
+      # not the thing standing between a stranger and your money — that is the
+      # absence of a write path.
+      - key: CORS_ORIGINS
+        value: "*"
+
+      # Render's free tier suspends a web service after ~15 min without
+      # inbound traffic. The self-ping keeps the process warm so the first
+      # real visitor does not pay a cold start plus two upstream round-trips.
+      # It reads the platform-injected RENDER_EXTERNAL_URL, so no URL is
+      # needed here; unset that and the ping is a no-op rather than a loop.
+      - key: KEEPALIVE_ENABLED
+        value: "true"
+      - key: KEEPALIVE_SECONDS
+        value: "600"
+
+  # --- Frontend: the deck (static, zero dependencies) ----------------------
+  # There is no bundler and nothing to install: the site is hand-written
+  # HTML/CSS/JS. build.sh's only job is stamping API_URL into config.js.
+  - type: web
+    name: gearguard-site
+    runtime: static
+    rootDir: site
+    buildCommand: sh ./build.sh
+    staticPublishPath: .
+    autoDeploy: true
+    envVars:
+      # The backend's PUBLIC url — see THE ONE TRAP above. After the first
+      # apply, copy the URL from the gearguard-api service page over this
+      # value if Render suffixed the name (it does when the name is already
+      # taken globally), then redeploy this site.
+      - key: API_URL
+        value: https://gearguard-api.onrender.com
+    headers:
+      # The deck loads Google Fonts and calls the API over https; nothing else
+      # is fetched, nothing is embedded, and no inline handler exists. Locking
+      # that down costs nothing and makes an injected script a broken request
+      # rather than a working one.
+      - path: /*
+        name: Content-Security-Policy
+        value: >-
+          default-src 'self';
+          style-src 'self' https://fonts.googleapis.com;
+          font-src https://fonts.gstatic.com;
+          img-src 'self' data:;
+          connect-src 'self' https:;
+          frame-ancestors 'none';
+          base-uri 'self'
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+    routes:
+      # Single page — anything unknown lands on it rather than a 404 from the
+      # static host.
+      - type: rewrite
+        source: /*
+        destination: /index.html

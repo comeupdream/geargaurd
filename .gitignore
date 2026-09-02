@@ -1,0 +1,25 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# --- Environment ---
+# There are no credentials in this project — every upstream it reads is
+# keyless — but a local .env may still carry a TOKEN_CONTRACT under test.
+.env
+.env.local
+!.env.example
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# NOTE: site/config.js is COMMITTED on purpose. It carries the local-dev
+# default so the site runs with no build step; build.sh overwrites it at
+# deploy time from API_URL.
