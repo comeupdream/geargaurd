@@ -7,9 +7,35 @@
 <meta name="description" content="GEAR GUARD GARY ($GARY) — an independent, gear-themed community token deck. Hold $GARY, receive tokenized RIVN on Robinhood Chain. Live price tape, an interactive wireframe rig, and a stated posture: read-only, non-custodial, nothing signs here.">
 <meta name="theme-color" content="#0a0e0c">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://geargaurd.tech/">
+
+<!-- SOCIAL CARD.
+     The image URL must be ABSOLUTE. Every unfurler — Slack, Discord, X,
+     iMessage, LinkedIn — fetches it out of band with no page context, so a
+     root-relative path resolves against nothing and the link arrives bare.
+     That is the single most common way a card "works locally" and shows up
+     blank in someone's timeline.
+
+     social-card.png is rendered from social-card.html by
+     scripts/gen-social-card.mjs and committed. Re-run that script after any
+     change to the template, or the card silently ships a version behind. -->
+<meta property="og:site_name" content="Gear Guard Gary">
+<meta property="og:url" content="https://geargaurd.tech/">
 <meta property="og:title" content="GEAR GUARD GARY — $GARY">
-<meta property="og:description" content="Hold $GARY, receive tokenized RIVN on Robinhood Chain. Live price tape, interactive wireframe rig, honest posture.">
+<meta property="og:description" content="Hold $GARY, receive tokenized RIVN on Robinhood Chain. Automatic, nothing to claim. Live price tape and an interactive wireframe rig.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://geargaurd.tech/social-card.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Gear Guard Gary — $GARY on Robinhood Chain, on an SD card with gold contacts and the Gary gear mark.">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://geargaurd.tech/">
+<meta name="twitter:title" content="GEAR GUARD GARY — $GARY">
+<meta name="twitter:description" content="Hold $GARY, receive tokenized RIVN on Robinhood Chain. Automatic, nothing to claim.">
+<meta name="twitter:image" content="https://geargaurd.tech/social-card.png">
+<meta name="twitter:image:alt" content="Gear Guard Gary — $GARY on Robinhood Chain.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
@@ -156,7 +182,7 @@
     <!-- The tape. Price and volume share ONE x-axis as stacked charts —
          never a dual-axis frame, which would let the two series be slid past
          each other until any story you like appears. -->
-    <div class="card" style="margin-top:26px"><div class="teeth"></div>
+    <div class="card"><div class="teeth"></div>
       <div class="chart-head">
         <h3>Price tape<em class="jp">価格</em></h3>
         <div class="range-row mono" id="rangeRow" role="group" aria-label="Chart time range">
@@ -172,7 +198,7 @@
 
     <!-- Metrics. Channel rows rather than a wall of tiles: each carries its
          own meter, so magnitude is visible without reading every number. -->
-    <div class="grid g2" style="margin-top:26px">
+    <div class="grid g2">
       <div class="card"><div class="teeth"></div>
         <h3>Pool telemetry<em class="jp">流動性</em></h3>
         <div class="chan" id="chanRows"></div>
@@ -187,7 +213,7 @@
       </div>
     </div>
 
-    <div class="card" style="margin-top:26px"><div class="teeth"></div>
+    <div class="card"><div class="teeth"></div>
       <p class="mono" id="tokStatus" style="font-size:11.5px;letter-spacing:.04em;margin:0">
         Waiting for the readout service…
       </p>
@@ -275,7 +301,7 @@
         on one buy, and a market cap built on it is fiction.</p>
       </div>
     </div>
-    <div class="grid g2" style="margin-top:26px">
+    <div class="grid g2">
       <div class="card"><div class="teeth"></div>
         <h3>A dark feed is not a zero</h3>
         <p>When an upstream stops answering, the last good reading stays on

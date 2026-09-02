@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GEAR GUARD GARY — social card template</title>
+<!--
+  The 1200x630 Open Graph card, rendered to social-card.png by
+  scripts/gen-social-card.mjs.
+
+  SELF-CONTAINED ON PURPOSE. No webfont link, no external CSS, no image
+  files: the renderer must produce byte-identical output on any machine and
+  with no network. A card that silently falls back to Times because a font
+  CDN was slow is a card nobody notices is broken until it is already in
+  someone's timeline.
+
+  It is a real HTML file rather than a hand-drawn PNG so the card can be
+  re-rendered from the same tokens the site uses — change the palette in
+  gg.css and this follows, instead of drifting a version behind forever.
+-->
+<style>
+  :root {
+    --void: #0a0e0c;
+    --panel: #111714;
+    --panel-2: #161e1a;
+    --line: #232d28;
+    --ink: #e7ede9;
+    --muted: #8fa099;
+    --compass: #ffd400;
+    --charge: #3fd98a;
+    --alloy: #6ea8d8;
+    --gold-hi: #a98f4e;
+    --gold: #7d6733;
+    --gold-lo: #4c3d1d;
+    --mono: ui-monospace, 'DejaVu Sans Mono', 'Liberation Mono', monospace;
+    /* No Orbitron here: it is a webfont and this file must render offline.
+       The brand is carried by the MARK and the card shape instead, which
+       survive any font substitution. */
+    --display: 'Archivo', 'DejaVu Sans', 'Liberation Sans', Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1200px; height: 630px; }
+  body {
+    position: relative; overflow: hidden;
+    background: var(--void); color: var(--ink);
+    font-family: var(--display);
+    display: flex; align-items: center;
+  }
+  /* The deck's own hero backdrop: two colour washes over a HUD survey grid,
+     masked away from the copy so it never fights the wordmark. */
+  .bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(52% 62% at 22% 0%, rgba(255, 212, 0, .10) 0%, transparent 62%),
+      radial-gradient(60% 55% at 78% 100%, rgba(63, 217, 138, .07) 0%, transparent 62%),
+      repeating-linear-gradient(90deg, rgba(110, 168, 216, .07) 0 1px, transparent 1px 74px),
+      repeating-linear-gradient(180deg, rgba(110, 168, 216, .07) 0 1px, transparent 1px 74px);
+    -webkit-mask-image: radial-gradient(120% 100% at 50% 0%, #000 0%, transparent 78%);
+  }
+  .scan {
+    position: absolute; inset: 0; pointer-events: none; opacity: .05;
+    background: repeating-linear-gradient(180deg, transparent 0 2px, #000 2px 3px);
+  }
+
+  .left { position: relative; padding: 0 0 0 76px; width: 660px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 15px; font-weight: 700;
+    letter-spacing: .30em; text-transform: uppercase; color: var(--alloy);
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 88px; line-height: .94; font-weight: 800;
+    letter-spacing: -.015em; text-transform: uppercase;
+  }
+  h1 em { font-style: normal; color: var(--compass); }
+  .rule {
+    height: 1px; margin: 30px 0 26px; width: 520px;
+    background: linear-gradient(90deg, rgba(110,168,216,.45), rgba(110,168,216,.10), transparent);
+  }
+  .lede { font-size: 25px; line-height: 1.42; color: var(--ink); max-width: 560px; }
+  .lede b { color: var(--compass); font-weight: 700; }
+  .lede span { color: var(--muted); }
+  .url {
+    margin-top: 34px; display: inline-flex; align-items: center; gap: 13px;
+    font-family: var(--mono); font-size: 22px; font-weight: 700;
+    letter-spacing: .07em; color: var(--compass);
+  }
+  .url i {
+    width: 11px; height: 11px; border-radius: 50%; background: var(--compass);
+    box-shadow: 0 0 0 5px rgba(255, 212, 0, .16); font-style: normal;
+  }
+
+  /* ---- the card object ---- */
+  .right { position: relative; flex: 1; display: flex; justify-content: center; }
+  .sd {
+    position: relative; width: 340px; height: 430px;
+    background: linear-gradient(170deg, #1d2723 0%, var(--panel) 46%, #0d1310 100%);
+    box-shadow:
+      inset 1px 1px 0 rgba(255,255,255,.07),
+      inset -1px -1px 0 rgba(0,0,0,.6),
+      0 28px 60px rgba(0,0,0,.55);
+    transform: rotate(-7deg);
+    /* Same geometry as the panes on the site: chamfered corner, and the
+       write-protect notch walking back up the left edge. */
+    clip-path: polygon(
+      0 0, calc(100% - 54px) 0, 100% 54px, 100% 100%, 0 100%,
+      0 210px, 17px 210px, 17px 150px, 0 150px
+    );
+  }
+  .sd .bar {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, var(--alloy), rgba(110,168,216,.05) 70%, transparent);
+  }
+  .sd .contacts {
+    position: absolute; top: 0; left: 40px; right: 74px; height: 52px;
+    border-radius: 0 0 8px 8px;
+    box-shadow: inset 0 -2px 3px rgba(0,0,0,.5);
+    background-image:
+      repeating-linear-gradient(90deg, transparent 0 24px, rgba(8,12,10,.92) 24px 34px),
+      linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 52%, var(--gold-lo) 100%);
+  }
+  .sd .label {
+    position: absolute; left: 40px; right: 30px; top: 96px;
+    font-family: var(--mono); font-size: 13px; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--alloy);
+  }
+  .sd .mark { position: absolute; left: 40px; top: 148px; }
+  .sd .chip {
+    position: absolute; left: 40px; right: 30px; bottom: 34px;
+    font-family: var(--mono); font-size: 15px; letter-spacing: .12em; color: var(--muted);
+  }
+  .sd .chip b { display: block; color: var(--ink); font-size: 27px; letter-spacing: .06em; }
+  .sd .teeth {
+    position: absolute; left: 40px; right: 30px; bottom: 96px; height: 6px;
+    background: repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 16px);
+  }
+
+  /* ---- footer telemetry rail ---- */
+  .rail {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 62px;
+    border-top: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(17,23,20,.7), rgba(10,14,12,.95));
+    display: flex; align-items: center; gap: 44px; padding: 0 76px;
+    font-family: var(--mono); font-size: 15px; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .rail b { color: var(--ink); font-weight: 700; letter-spacing: .1em; }
+  .rail .go { color: var(--charge); }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+
+  <div class="left">
+    <div class="eyebrow">Robinhood Chain · Independent</div>
+    <h1>Gear Guard<br><em>Gary</em></h1>
+    <div class="rule"></div>
+    <p class="lede">
+      Hold <b>$GARY</b>, receive tokenized RIVN.<br>
+      <span>Automatic. Nothing to claim.</span>
+    </p>
+    <div class="url"><i></i>geargaurd.tech</div>
+  </div>
+
+  <div class="right">
+    <div class="sd">
+      <div class="bar"></div>
+      <div class="contacts"></div>
+      <div class="label">Gear Guard Gary</div>
+      <div class="mark">
+        <svg width="96" height="96" viewBox="0 0 48 48" aria-hidden="true">
+          <g stroke="#6ea8d8" stroke-width="3">
+            <line x1="24" y1="5" x2="24" y2="11"/>
+            <line x1="24" y1="5" x2="24" y2="11" transform="rotate(45 24 24)"/>
+            <line x1="24" y1="5" x2="24" y2="11" transform="rotate(90 24 24)"/>
+            <line x1="24" y1="5" x2="24" y2="11" transform="rotate(135 24 24)"/>
+            <line x1="24" y1="5" x2="24" y2="11" transform="rotate(180 24 24)"/>
+            <line x1="24" y1="5" x2="24" y2="11" transform="rotate(225 24 24)"/>
+            <line x1="24" y1="5" x2="24" y2="11" transform="rotate(270 24 24)"/>
+            <line x1="24" y1="5" x2="24" y2="11" transform="rotate(315 24 24)"/>
+          </g>
+          <circle cx="24" cy="24" r="13.5" fill="none" stroke="#6ea8d8" stroke-width="2.4"/>
+          <rect x="15" y="21.4" width="18" height="5.2" rx="2.6" fill="#ffd400"/>
+        </svg>
+      </div>
+      <div class="teeth"></div>
+      <div class="chip">Ticker<b>$GARY</b></div>
+    </div>
+  </div>
+
+  <div class="rail">
+    <span>Live price tape</span>
+    <span>Wireframe rig</span>
+    <span>Holder rewards</span>
+    <span class="go">Read-only · nothing signs</span>
+  </div>
+
+  <div class="scan"></div>
+</body>
+</html>

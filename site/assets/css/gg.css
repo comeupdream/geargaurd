@@ -432,11 +432,24 @@ section .wrap { position: relative; }
 @media (prefers-reduced-motion: reduce) { .livery { --fill: 1; } }
 
 /* ---------- cards ---------------------------------------------------------- */
-/* Cards need real air around them: shaped panes read as separate objects only
- * when the gap is wider than their own notch and chamfer, otherwise the cut
- * corners of neighbours crowd into each other and the row reads as one broken
- * surface. */
-.grid { display: grid; gap: 26px; }
+/* Shaped panes read as separate objects only when the gap clears their own
+ * chamfer and contact block — otherwise the cut corners of neighbours crowd
+ * into each other and a row reads as one broken surface.
+ *
+ * ROW GAP IS BIGGER THAN COLUMN GAP, on purpose. A card's gold contact strip
+ * sits hard against its top edge, so a row underneath needs clearance the
+ * columns do not: matched gaps look correct on a wireframe and look like the
+ * rows are touching once the contacts are drawn. */
+.grid { display: grid; column-gap: 26px; row-gap: 44px; }
+
+/* Every stacked card block in a section is separated by the same number, from
+ * ONE place. This used to be an inline margin repeated on some blocks and a
+ * grid row-gap on others, which is how the columns ended up correctly spaced
+ * while the rows looked welded together. */
+section .wrap > .grid + .grid,
+section .wrap > .grid + .card,
+section .wrap > .card + .grid,
+section .wrap > .card + .card { margin-top: 44px; }
 .g3 { grid-template-columns: repeat(3, 1fr); }
 .g2 { grid-template-columns: repeat(2, 1fr); }
 /* ---------- the SD-card pane ----------------------------------------------
