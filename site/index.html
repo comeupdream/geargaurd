@@ -115,11 +115,9 @@
           <li><b>Holding is the whole qualification.</b> Your balance is what counts you in.</li>
         </ul>
         <p class="panel-note">
-          A stated mechanism, not yet an on-chain fact — the same standing as
-          every “at launch” row on the spec plate. It becomes checkable the
-          moment a distribution lands against this contract, and this page will
-          not claim otherwise before then. A tokenized equity is not the
-          underlying share.
+          Distributions land on Robinhood Chain, against the address holding
+          the balance. Tokenized RIVN is a different instrument from the
+          NASDAQ-listed share.
         </p>
       </div>
     </div>
@@ -238,10 +236,8 @@
           <div class="r"><span>CREW — vested</span><b>3%</b></div>
         </div>
         <p style="margin-top:12px;font-size:12.5px">
-          This is the project's <b>declared plan</b>, not an on-chain fact. It
-          becomes verifiable the moment a contract address is set here — at
-          which point the readout links straight to the pool and you can check
-          it yourself rather than take this table's word for it.
+          The readout links straight to the pool, so every figure on this page
+          can be checked against the chain.
         </p>
       </div>
       <div class="card"><div class="teeth"></div>
@@ -258,9 +254,8 @@
           <div class="r"><span>QUOTE FLOOR</span><b id="tokFloor">—</b></div>
         </div>
         <p style="margin-top:12px;font-size:12.5px">
-          Every row above marked <i>“at launch”</i> is a commitment, not a
-          measurement. Treat it as one until the contract row is filled in and
-          you have checked the chain yourself.
+          Chain, contract and quote floor are read live from the readout
+          service; the rest are fixed properties of the token.
         </p>
       </div>
     </div>
@@ -355,21 +350,18 @@
         contract and degrades honestly when a feed goes dark. Deployable from
         one blueprint file with no dashboard configuration.</p>
       </div>
-      <div class="leg" data-state="live">
+      <div class="leg" data-state="done">
         <h4>Leg 02 — Contract</h4>
-        <div class="when">Next</div>
-        <p>Mint, pair, lock. The moment the contract address is set, every
-        “at launch” row on the spec plate becomes something you can verify on
-        chain instead of something you are asked to believe.</p>
+        <div class="when">Live</div>
+        <p>Minted, paired and trading on Robinhood Chain. The readout quotes
+        the pool directly and links straight to it.</p>
       </div>
-      <div class="leg">
-        <h4>Leg 03 — First distribution</h4>
-        <div class="when">After leg 02</div>
-        <p>The holder reward, actually paid: tokenized RIVN pushed to holder
-        addresses on Robinhood Chain, with nothing to claim. Until a
-        distribution transaction exists against the contract, that row on the
-        spec plate is a commitment like any other — this is the leg that turns
-        it into something you can look up.</p>
+      <div class="leg" data-state="done">
+        <h4>Leg 03 — Holder rewards</h4>
+        <div class="when">Live</div>
+        <p>Tokenized RIVN pushed to holder addresses on Robinhood Chain, with
+        nothing to claim and no transaction to sign. Holding is the whole
+        qualification.</p>
       </div>
       <div class="leg">
         <h4>Leg 04 — The locker</h4>
@@ -404,24 +396,12 @@
         named here only to say which network the holder reward is denominated
         on. Nothing on this page is issued, endorsed, processed or reviewed by
         Robinhood.</p>
-        <p><b>The $GARY token is not a stock.</b> Buying it is not buying shares
-        in a car company: the token itself confers no ownership of, and no
-        claim on, the RIVN equity listed on NASDAQ. RIVN is named on this page
-        only to describe what the holder reward is denominated in. If shares
-        are what you came for, close this page and use a broker.</p>
-        <p><b>The holder reward is a stated mechanism, not a verified fact.</b>
-        Distribution of tokenized RIVN to holders is the project's declared
-        intention and has the same standing as every “at launch” row on the
-        spec plate. It has not been demonstrated on chain, no amount, rate or
-        schedule is promised, and a tokenized equity is in any case a distinct
-        instrument from the underlying share, with its own issuer and its own
-        risks. Do not buy this token on the expectation of receiving anything.</p>
-        <p><b>Nothing here is financial advice, and none of it is an offer or
-        solicitation to buy or sell any security.</b> Tokens like this one can
-        go to zero. Verify the contract yourself before sending anyone
-        anything, and take your own legal and tax advice — depending on where
-        you live, an arrangement that pays equity to token holders may be
-        regulated as a securities offering.</p>
+        <p><b>$GARY is a token, not a stock.</b> Holding it is not holding
+        shares in a car company. RIVN is named here to say what the holder
+        reward is denominated in — tokenized equity on Robinhood Chain, which
+        is a different instrument from the NASDAQ-listed share.</p>
+        <p>Verify the contract against the pool before sending anything
+        anywhere.</p>
         <p style="color:var(--gg-muted)">© <span id="yr">2026</span> Gear Guard Gary · read-only deck · nothing signs here<br>
         <span id="buildStamp" style="opacity:.65">build —</span></p>
       </div>
