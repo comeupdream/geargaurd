@@ -72,6 +72,20 @@ services:
         value: "GARY"
       - key: TOKEN_CONTRACT
         value: "0x401923511EC7356AeC6b7717207394feA97CEa01"
+      # THE PINNED POOL — set this and the quote stops being a search.
+      #
+      # The quote used to be found by searching for TOKEN_CONTRACT, which
+      # assumes the token's identifier on its chain is a 20-byte EVM address.
+      # Robinhood Chain identifiers are 32 bytes (this pool id is 66
+      # characters), so that search matched nothing and the deck sat on "no
+      # pool" while the token traded fine. Naming the pool removes the guess.
+      #
+      # It is the last path segment of the pool's own DexScreener URL:
+      #   dexscreener.com/<TOKEN_CHAIN>/<TOKEN_PAIR_ID>
+      # Leave blank to fall back to the contract-address search, which is
+      # still correct for ordinary EVM chains and for Solana.
+      - key: TOKEN_PAIR_ID
+        value: "0x17f1144200cac91a074d2787900117d0d7803177c1b4d00f80810c189a41a99e"
       # A declared LABEL and a fallback only. The upstream looks a contract up
       # across every chain it indexes, so this narrows nothing — and when a
       # live pool answers, the chain it actually trades on replaces this

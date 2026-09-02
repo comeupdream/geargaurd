@@ -119,16 +119,29 @@ p { margin: 0 0 14px; }
 }
 .bracketed::before { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }
 .bracketed::after { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }
-/* A .card already speaks this lineage through its chamfer and edge bar, and
- * its ::before slot is spent on that bar — so adding brackets there yields a
- * single orphaned corner that reads as a rendering artefact. Cards keep the
- * chamfer; only full-bleed surfaces (the rig) wear brackets. */
+/* Cards never wear brackets: their pseudo-element slots are spent on the edge
+ * bar, and a card already carries this lineage through its own shape. Only
+ * full-bleed surfaces (the rig) get brackets. */
 .card.bracketed::before {
   content: ""; left: 0; top: 0; bottom: 0; width: 2px; height: auto; border: 0;
   background: linear-gradient(180deg, var(--gg-alloy), rgba(110, 168, 216, .05) 70%, transparent);
   opacity: 1;
 }
 .card.bracketed::after { content: none; }
+
+/* The hero panels are the same component, so they wear the same shape. */
+.panel-lite {
+  border-radius: 0;
+  padding: 26px 22px 18px 30px;
+  clip-path: polygon(
+    0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%,
+    0 66px, 9px 66px, 9px 38px, 0 38px
+  );
+}
+.panel-lite::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(180deg, var(--gg-alloy), rgba(110, 168, 216, .05) 70%, transparent);
+}
 
 /* The JP micro-subtitle. Both lineages independently reached for this (XAT's
  * parts-box subtitles, MangoMatrix's コードでビート), which is why it earns a
@@ -430,28 +443,61 @@ section .wrap { position: relative; }
 @media (prefers-reduced-motion: reduce) { .livery { --fill: 1; } }
 
 /* ---------- cards ---------------------------------------------------------- */
-.grid { display: grid; gap: 14px; }
+/* Cards need real air around them: shaped panes read as separate objects only
+ * when the gap is wider than their own notch and chamfer, otherwise the cut
+ * corners of neighbours crowd into each other and the row reads as one broken
+ * surface. */
+.grid { display: grid; gap: 26px; }
 .g3 { grid-template-columns: repeat(3, 1fr); }
 .g2 { grid-template-columns: repeat(2, 1fr); }
-/* Mnemonic's CLIPPED PANE: the top-right corner is cut on a 45° chamfer and a
- * gradient edge bar runs down the left side. This is the single most legible
- * cue of that lineage — the first pass expressed it only as faint corner
- * brackets, which is a cue you have to be told to look for. A pane that is
- * visibly not a rectangle is one you cannot miss.
+/* ---------- the SD-card pane ----------------------------------------------
+ * Cards are shaped as memory cards: the clipped corner, the write-protect
+ * notch cut into the left edge, and a contact strip along the top. It reads
+ * as a component you could physically pull out of a slot, which suits a deck
+ * whose whole fiction is instrumentation — and it carries the Mnemonic
+ * clipped-pane cue at the same time, so the two ideas cost one shape.
  *
- * clip-path replaces border-radius here: the two do not compose, and a
- * rounded rect wins visually, cancelling the chamfer. */
+ * Three things make it read as a card rather than a rectangle with a corner
+ * missing, and it needs all three:
+ *   1. the chamfer, big enough to be deliberate (22px, not 8px)
+ *   2. the notch on the left edge — this is the part people actually
+ *      recognise, and without it the chamfer alone just looks clipped
+ *   3. the contact fingers along the top
+ *
+ * clip-path replaces border-radius: the two do not compose, and a rounded
+ * rect wins visually, cancelling the chamfer. The notch is cut in the same
+ * path, walking back UP the left edge after the bottom-left corner. */
 .card {
   background: var(--gg-panel); border: 1px solid var(--gg-line);
-  border-radius: 0; padding: 18px 18px 16px 22px; position: relative; overflow: hidden;
-  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  border-radius: 0; padding: 26px 22px 20px 30px; position: relative; overflow: hidden;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 22px) 0,      /* toward the clipped corner */
+    100% 22px,                /* the chamfer */
+    100% 100%,
+    0 100%,
+    0 66px,                   /* up the left edge to the notch */
+    9px 66px,
+    9px 38px,                 /* the write-protect notch */
+    0 38px
+  );
 }
-/* The edge bar. Alloy at the top fading out downward — light entering the
- * pane from one side, not a decorative stripe. */
+/* The edge bar — light entering the pane from one side, not a decorative
+ * stripe. The notch interrupts it, exactly as a slider would. */
 .card::before {
   content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
   background: linear-gradient(180deg, var(--gg-alloy), rgba(110, 168, 216, .05) 70%, transparent);
   z-index: 1;
+}
+/* Contact fingers. Alloy, NOT gold: real SD contacts are gold, but compass
+ * yellow is this deck's one go-colour and spending it on chrome would cost
+ * the CTA and the live lamp their scarcity. The shape carries the reference
+ * on its own. */
+.card > .teeth {
+  position: absolute; top: 0; left: 30px; right: 34px; height: 11px;
+  background: repeating-linear-gradient(90deg,
+    rgba(110, 168, 216, .32) 0 6px, transparent 6px 12px);
+  opacity: 1;
 }
 .card > .teeth { position: absolute; inset: 0 0 auto 0; height: 3px; opacity: .55; }
 .card h3 {
@@ -592,6 +638,15 @@ section .wrap { position: relative; }
   border-bottom: 1px solid var(--gg-line);
 }
 .chart-table td { color: var(--gg-muted); border-bottom: 1px solid rgba(35, 45, 40, .5); }
+
+/* ---------- readout diagnostics ------------------------------------------- */
+.diag { margin-top: 14px; border-top: 1px solid var(--gg-line); padding-top: 10px; }
+.diag summary {
+  cursor: pointer; font: 600 10px/1 var(--gg-mono); letter-spacing: .18em;
+  text-transform: uppercase; color: var(--gg-alloy); padding: 4px 0;
+}
+.diag .rows { margin-top: 8px; font-size: 11px; }
+.diag .r b { word-break: break-all; max-width: 62%; }
 
 /* ---------- channel rows (pool telemetry) --------------------------------- */
 .chan-row {

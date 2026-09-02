@@ -39,9 +39,15 @@ def test_no_write_path() -> None:
     assert not offenders, f"write path(s) appeared: {offenders}"
 
 
-def test_token_without_contract_is_unset(monkeypatch) -> None:
-    """No contract configured => no price. Not a zero, not a placeholder."""
+def test_token_with_nothing_configured_is_unset(monkeypatch) -> None:
+    """Nothing to look up => no price. Not a zero, not a placeholder.
+
+    "Nothing" now means NEITHER a pool id NOR a contract address: either one
+    alone is a complete configuration, because on some chains the pool id is
+    the only identifier anyone can supply.
+    """
     monkeypatch.setattr(settings, "token_contract", "")
+    monkeypatch.setattr(settings, "token_pair_id", "")
     body = client.get("/api/token").json()
     assert body["status"] == "unset"
     assert "price_usd" not in body
@@ -74,6 +80,49 @@ def test_deepest_pool_wins() -> None:
 
 def test_empty_pair_list_is_no_pool() -> None:
     assert TokenFeed()._pick([])["status"] == "no_pool"
+
+
+def test_pinned_pool_is_reported_as_the_source_mode(monkeypatch) -> None:
+    """A pinned pool must announce itself.
+
+    "pinned pool" and "address search" fail for completely different reasons
+    — a bad pool id vs. a token whose chain identifier is not the 20-byte EVM
+    address — and telling them apart from outside the service was impossible
+    until this field existed.
+    """
+    monkeypatch.setattr(settings, "token_pair_id", "0xabc")
+    assert client.get("/api/token").json()["source_mode"] == "pinned_pool"
+
+    monkeypatch.setattr(settings, "token_pair_id", "")
+    assert client.get("/api/token").json()["source_mode"] == "address_search"
+
+
+def test_pinned_pool_alone_is_enough_to_quote(monkeypatch) -> None:
+    """A pool id with no contract address is a complete configuration.
+
+    On a chain whose token identifiers are not 20-byte EVM addresses, the
+    pool id may be the only thing anyone can supply — so it must not be
+    rejected as "unset" for want of a contract.
+    """
+    monkeypatch.setattr(settings, "token_contract", "")
+    monkeypatch.setattr(settings, "token_pair_id", "0xpool")
+    assert client.get("/api/token").json()["status"] != "unset"
+
+
+def test_both_pool_sides_are_reported() -> None:
+    """The deck must be able to see WHICH asset the price belongs to.
+
+    priceUsd is the base token's price; pin a pool the wrong way round and
+    the page prints the quote asset's price under our ticker — a plausible
+    number about a different coin.
+    """
+    result = TokenFeed()._pick([{
+        "priceUsd": "1.00", "liquidity": {"usd": 50_000.0}, "dexId": "deep",
+        "baseToken": {"address": "0xaaa", "symbol": "GARY", "name": "Gear Guard Gary"},
+        "quoteToken": {"address": "0xbbb", "symbol": "WETH", "name": "Wrapped Ether"},
+    }])
+    assert result["base_token"]["symbol"] == "GARY"
+    assert result["quote_token"]["symbol"] == "WETH"
 
 
 def test_live_pair_chain_overrides_the_configured_label(monkeypatch) -> None:

@@ -69,7 +69,13 @@ async def lifespan(app: FastAPI):
                 await task
 
 
-app = FastAPI(title=settings.app_name, version="1.0.0", lifespan=lifespan)
+# Bumped whenever the API's shape changes. The deck prints it in its
+# diagnostics, so "is the BACKEND stale?" is answerable without guessing —
+# a frontend that expects a field an old backend never sends is otherwise
+# indistinguishable from a dead upstream.
+API_VERSION = "1.2.0"
+
+app = FastAPI(title=settings.app_name, version=API_VERSION, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -133,6 +139,7 @@ async def state() -> dict:
     )
     return {
         "service": settings.app_name,
+        "api_version": API_VERSION,
         "mode": "read-only",
         "token": tok,
         "majors": maj,

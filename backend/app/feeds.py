@@ -39,6 +39,7 @@ from .config import settings
 logger = logging.getLogger("gearguard.feeds")
 
 DEXSCREENER_TOKENS = "https://api.dexscreener.com/latest/dex/tokens/"
+DEXSCREENER_PAIRS = "https://api.dexscreener.com/latest/dex/pairs/"
 HERMES_LATEST = "https://hermes.pyth.network/v2/updates/price/latest"
 GECKOTERMINAL = "https://api.geckoterminal.com/api/v2"
 
@@ -90,13 +91,20 @@ class TokenFeed(_Reader):
 
     def snapshot(self, *, force: bool = False) -> dict:
         contract = (settings.token_contract or "").strip()
+        pair_id = (settings.token_pair_id or "").strip()
         base = {
             "name": settings.token_name,
             "symbol": settings.token_symbol,
             "chain": settings.token_chain,
             "contract": contract,
+            "pair_id": pair_id,
+            # Which route produced the quote. Printed in the deck's
+            # diagnostics: "pinned pool" and "address search" fail for
+            # completely different reasons, and telling them apart from the
+            # outside used to be impossible.
+            "source_mode": "pinned_pool" if pair_id else "address_search",
         }
-        if not contract:
+        if not contract and not pair_id:
             # Honest empty state. Not a zero, not a placeholder chart.
             return {
                 **base,
@@ -110,9 +118,22 @@ class TokenFeed(_Reader):
                 return {**base, **self._cache.payload, "stale_seconds": 0}
 
             try:
-                resp = self._client.get(DEXSCREENER_TOKENS + contract)
-                resp.raise_for_status()
-                pairs = resp.json().get("pairs") or []
+                if pair_id:
+                    # PINNED: fetch exactly this pool on exactly this chain.
+                    # Deterministic — no search, nothing to match wrongly.
+                    url = (DEXSCREENER_PAIRS +
+                           str(settings.token_chain).strip() + "/" + pair_id)
+                    body = self._client.get(url)
+                    body.raise_for_status()
+                    data = body.json() or {}
+                    # The endpoint has answered with both shapes over time.
+                    pairs = data.get("pairs") or (
+                        [data["pair"]] if data.get("pair") else []
+                    )
+                else:
+                    resp = self._client.get(DEXSCREENER_TOKENS + contract)
+                    resp.raise_for_status()
+                    pairs = resp.json().get("pairs") or []
             except Exception as exc:  # noqa: BLE001 — degrade, never raise
                 logger.warning("token quote failed: %s", exc)
                 if self._cache.payload:
@@ -138,10 +159,24 @@ class TokenFeed(_Reader):
             # Only "no_pool" falls through. A "thin" verdict is a real
             # measurement and must stand — retrying it against another source
             # until one agrees is shopping for the answer you wanted.
-            if payload.get("status") == "no_pool":
+            # Only when we were SEARCHING. A pinned pool that came back empty
+            # means the pin is wrong, and falling back to a contract-address
+            # search there would quietly answer a different question than the
+            # one the pin asked — the operator would see a price and never
+            # learn their pool id was bad.
+            if payload.get("status") == "no_pool" and not pair_id:
                 alt = self._geckoterminal(contract)
                 if alt is not None:
                     payload = self._pick([alt])
+            elif payload.get("status") == "no_pool" and pair_id:
+                payload = {
+                    "status": "no_pool",
+                    "detail": (
+                        f"No pool {pair_id[:10]}… on chain "
+                        f"{settings.token_chain!r}. Check TOKEN_PAIR_ID and "
+                        f"TOKEN_CHAIN against the pool's own URL."
+                    ),
+                }
 
             if payload.get("status") == "live":
                 self._cache = _Cached(payload=payload, fetched_at=time.time())
@@ -274,6 +309,14 @@ class TokenFeed(_Reader):
             # can never come from two different markets.
             "pool_address": best.get("pairAddress"),
             "pair_created_at": _num(best.get("pairCreatedAt")),
+            # WHICH ASSET IS THIS PRICE FOR? DexScreener's priceUsd is the
+            # BASE token's price. Pin the wrong way round and the deck prints
+            # the price of the quote asset under our ticker — a number that
+            # looks entirely plausible and is about a different coin. Both
+            # sides are reported so the deck can show what it is quoting, and
+            # so a mis-pinned pool is visible rather than silent.
+            "base_token": _token_side(best.get("baseToken")),
+            "quote_token": _token_side(best.get("quoteToken")),
             # The chain the quoting pool ACTUALLY trades on, straight from the
             # upstream. snapshot() merges this dict OVER the configured values,
             # so this overrides the token_chain label — a config string that
@@ -364,6 +407,17 @@ def _num(value) -> float | None:
         return None
 
 
+def _token_side(side) -> dict | None:
+    """Normalise one side of a pair (address / name / symbol), or None."""
+    if not isinstance(side, dict):
+        return None
+    return {
+        "address": side.get("address"),
+        "name": side.get("name"),
+        "symbol": side.get("symbol"),
+    }
+
+
 def _txns(pair: dict) -> dict | None:
     """24h buy/sell counts, or None when the upstream did not report them.
 
@@ -443,7 +497,11 @@ class HistoryFeed(_Reader):
                 "detail": tok.get("detail") or "No live pool to chart yet.",
             }
 
-        pool = tok.get("pool_address")
+        # Prefer the pool the operator PINNED over the one the quote reported.
+        # They should agree; when they do not, the pin is the deliberate
+        # statement of which market this deck is about, and the chart must
+        # follow the same market as the headline price.
+        pool = (settings.token_pair_id or "").strip() or tok.get("pool_address")
         net = GT_NETWORKS.get(str(tok.get("chain") or "").lower())
         if not pool:
             return {**base, "status": "no_history", "detail": "The quoting pool has no address."}

@@ -161,7 +161,7 @@
         on one buy, and a market cap built on it is fiction.</p>
       </div>
     </div>
-    <div class="grid g2" style="margin-top:14px">
+    <div class="grid g2" style="margin-top:26px">
       <div class="card"><div class="teeth"></div>
         <h3>A dark feed is not a zero</h3>
         <p>When an upstream stops answering, the last good reading stays on
@@ -291,7 +291,7 @@
     <!-- The tape. Price and volume share ONE x-axis as stacked charts —
          never a dual-axis frame, which would let the two series be slid past
          each other until any story you like appears. -->
-    <div class="card bracketed" style="margin-top:14px"><div class="teeth"></div>
+    <div class="card" style="margin-top:26px"><div class="teeth"></div>
       <div class="chart-head">
         <h3>Price tape<em class="jp">価格</em></h3>
         <div class="range-row mono" id="rangeRow" role="group" aria-label="Chart time range">
@@ -307,7 +307,7 @@
 
     <!-- Metrics. Channel rows rather than a wall of tiles: each carries its
          own meter, so magnitude is visible without reading every number. -->
-    <div class="grid g2" style="margin-top:14px">
+    <div class="grid g2" style="margin-top:26px">
       <div class="card"><div class="teeth"></div>
         <h3>Pool telemetry<em class="jp">流動性</em></h3>
         <div class="chan" id="chanRows"></div>
@@ -322,11 +322,21 @@
       </div>
     </div>
 
-    <div class="card" style="margin-top:14px"><div class="teeth"></div>
+    <div class="card" style="margin-top:26px"><div class="teeth"></div>
       <p class="mono" id="tokStatus" style="font-size:11.5px;letter-spacing:.04em;margin:0">
         Waiting for the readout service…
       </p>
       <p style="margin:10px 0 0"><a id="tokPairLink" class="mono" hidden href="#" rel="noopener" target="_blank" style="font-size:11px;letter-spacing:.12em;color:var(--gg-alloy)">OPEN THE POOL ON THE DEX →</a></p>
+
+      <!-- Readout diagnostics. Opens itself whenever the feed is not live.
+           A dead readout used to present as "--" everywhere with no way to
+           tell a wrong pool id from an unreachable backend from a stale
+           bundle — three completely different problems wearing one face.
+           This names which one it is. -->
+      <details class="diag" id="diag">
+        <summary>Readout diagnostics</summary>
+        <div class="rows" id="diagRows"></div>
+      </details>
     </div>
   </div>
 </section>

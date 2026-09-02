@@ -29,6 +29,22 @@ class Settings(BaseSettings):
     token_symbol: str = "GARY"
     token_contract: str = "0x401923511EC7356AeC6b7717207394feA97CEa01"
 
+    # THE PINNED POOL — and the reason it exists.
+    #
+    # The quote used to be found by SEARCHING for the contract address
+    # (/latest/dex/tokens/<address>). That search assumes the token's
+    # identifier on its chain is the 20-byte EVM address in token_contract.
+    # On Robinhood Chain the identifiers are 32 bytes — the pool in this
+    # project's own DexScreener URL is 66 characters — so the search matched
+    # nothing and the deck sat on "no pool" forever while the token traded
+    # perfectly well.
+    #
+    # Naming the pool removes the guess entirely: it is the exact market this
+    # deck means, quoted directly, with no cross-chain search to get wrong.
+    # Blank falls back to the old token-address search, which is still right
+    # for ordinary 20-byte EVM chains and for Solana.
+    token_pair_id: str = "0x17f1144200cac91a074d2787900117d0d7803177c1b4d00f80810c189a41a99e"
+
     # --- the holder reward ---------------------------------------------------
     # What holders receive, and where. Named here rather than hard-coded in the
     # page so the two cannot drift.

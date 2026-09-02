@@ -286,27 +286,76 @@ if (rangeRow) {
 /* ---------------------------------------------------------------------------
  * Polling
  * ------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------
+ * Diagnostics
+ *
+ * A dead readout used to look identical whatever killed it: "--" in every
+ * slot. A wrong pool id, an unreachable backend, a stale bundle and a token
+ * that genuinely has no market are four different problems wearing one face,
+ * and none of them was diagnosable from outside. This names which one it is.
+ * ------------------------------------------------------------------------- */
+var diagState = { fetch: 'not attempted', http: null };
+
+function paintDiag(tok, meta) {
+  var host = $('diagRows'), box = $('diag');
+  if (!host) return;
+  var b = window.GG_BUILD;
+  var rows = [
+    ['Frontend build', b ? b.commit + ' · ' + b.built : 'unstamped (build.sh did not run)'],
+    ['API base', API || 'none configured (window.GG_API is empty)'],
+    ['Last fetch', diagState.fetch + (diagState.http ? ' · HTTP ' + diagState.http : '')],
+    ['Backend API', (meta && meta.api_version) || 'not reported (backend predates this field)'],
+    ['Quote status', (tok && tok.status) || '--'],
+    ['Source mode', (tok && tok.source_mode) || '--'],
+    ['Chain', (tok && tok.chain) || '--'],
+    ['Pinned pool', (tok && tok.pair_id) || 'none (searching by contract address)'],
+    ['Priced asset', tok && tok.base_token && tok.base_token.symbol
+      ? tok.base_token.symbol + ' / ' + ((tok.quote_token && tok.quote_token.symbol) || '?')
+      : '--'],
+    ['Detail', (tok && tok.detail) || '—']
+  ];
+  host.innerHTML = rows.map(function (r) {
+    return '<div class="r"><span>' + r[0] + '</span><b>' + String(r[1])
+      .replace(/[<>&]/g, '') + '</b></div>';
+  }).join('');
+  /* Open itself when something is wrong; stay shut when everything is fine. */
+  if (box) box.open = !(tok && tok.status === 'live');
+}
+
 function tick() {
   if (!API) {
     /* No backend configured is its own honest state — not an error, and not
      * an excuse to invent a price. The rest of the page still works. */
     paintLamp('idle', 'No backend');
-    paintToken({ status: 'unset', detail: 'No backend configured for this deployment.' }, null);
+    diagState.fetch = 'skipped — no API base configured';
+    var none = { status: 'unset', detail: 'No backend configured for this deployment.' };
+    paintToken(none, null);
     paintMajors(null);
+    paintDiag(none, null);
     return;
   }
   fetch(API + '/api/state', { cache: 'no-store' })
-    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (r) {
+      diagState.http = r.status;
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      diagState.fetch = 'ok';
+      return r.json();
+    })
     .then(function (s) {
       paintToken(s.token || {}, s.limits);
       paintMajors(s.majors);
+      paintDiag(s.token || {}, s);
     })
-    .catch(function () {
+    .catch(function (err) {
       /* The backend itself being unreachable is reported as a dark feed, with
-       * whatever the page last painted left in place. */
+       * whatever the page last painted left in place. The reason is recorded
+       * for the diagnostics — "failed to fetch" (CORS, DNS, mixed content)
+       * and "HTTP 502" are different problems and must not read alike. */
+      diagState.fetch = 'failed — ' + (err && err.message ? err.message : 'network error');
       paintLamp('dark', 'Backend unreachable');
       setText('tokStatus', 'The readout service is not answering. Nothing below is current.');
       paintMajors(null);
+      paintDiag(null, null);
     });
 }
 
