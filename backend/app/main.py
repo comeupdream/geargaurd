@@ -29,7 +29,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .feeds import majors_feed, token_feed
+from .feeds import DEFAULT_RANGE, RANGES, history_feed, majors_feed, token_feed
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("gearguard")
@@ -103,6 +103,22 @@ async def majors() -> dict:
     return await asyncio.to_thread(majors_feed.snapshot)
 
 
+@app.get("/api/token/history")
+async def token_history(range: str = DEFAULT_RANGE) -> dict:
+    """OHLCV candles for the pool that is quoting the token.
+
+    Candles come from the SAME pool the headline price does, so the chart and
+    the number above it can never describe two different markets. ``status``
+    carries the token's own status when there is nothing to chart yet, plus
+    two of its own: ``no_history`` (pool exists, too new for candles) and
+    ``unsupported_chain`` (no candle source mapped for that chain).
+
+    An unknown ``range`` falls back to the default rather than erroring — a
+    bad query string should not blank the chart.
+    """
+    return await asyncio.to_thread(history_feed.snapshot, range)
+
+
 @app.get("/api/state")
 async def state() -> dict:
     """Everything the deck needs in one round trip.
@@ -121,4 +137,9 @@ async def state() -> dict:
         "token": tok,
         "majors": maj,
         "limits": {"min_liquidity_usd": settings.min_liquidity_usd},
+        "ranges": list(RANGES.keys()),
+        "reward": {
+            "asset": settings.reward_asset,
+            "network": settings.reward_network,
+        },
     }

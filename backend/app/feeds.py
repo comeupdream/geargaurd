@@ -40,6 +40,7 @@ logger = logging.getLogger("gearguard.feeds")
 
 DEXSCREENER_TOKENS = "https://api.dexscreener.com/latest/dex/tokens/"
 HERMES_LATEST = "https://hermes.pyth.network/v2/updates/price/latest"
+GECKOTERMINAL = "https://api.geckoterminal.com/api/v2"
 
 # Verified Pyth mainnet crypto feed ids (hermes /v2/price_feeds). Symbol ->
 # 0x-prefixed id. An unknown symbol is skipped, never guessed.
@@ -173,7 +174,20 @@ class TokenFeed(_Reader):
             "market_cap_usd": _num(best.get("marketCap")),
             "volume_24h_usd": _num(volume.get("h24")),
             "change_1h_pct": _num(change.get("h1")),
+            "change_6h_pct": _num(change.get("h6")),
             "change_24h_pct": _num(change.get("h24")),
+            "volume_6h_usd": _num(volume.get("h6")),
+            "volume_1h_usd": _num(volume.get("h1")),
+            # Buy/sell counts over 24h. Reported as raw COUNTS, not as a
+            # ratio: "68% buys" out of nine transactions is a number that
+            # sounds like a market and isn't one, and the denominator is the
+            # thing that tells you which it is.
+            "txns_24h": _txns(best),
+            # The pool address — the history feed reads candles from exactly
+            # the pool that produced this quote, so the chart and the price
+            # can never come from two different markets.
+            "pool_address": best.get("pairAddress"),
+            "pair_created_at": _num(best.get("pairCreatedAt")),
             # The chain the quoting pool ACTUALLY trades on, straight from the
             # upstream. snapshot() merges this dict OVER the configured values,
             # so this overrides the token_chain label — a config string that
@@ -264,5 +278,152 @@ def _num(value) -> float | None:
         return None
 
 
+def _txns(pair: dict) -> dict | None:
+    """24h buy/sell counts, or None when the upstream did not report them.
+
+    Returned as raw counts and never pre-divided into a percentage: "68% buys"
+    computed from nine transactions is a number that sounds like a market and
+    is not one. The denominator is the part that tells you which it is, so the
+    denominator ships.
+    """
+    block = ((pair.get("txns") or {}).get("h24")) or {}
+    buys, sells = block.get("buys"), block.get("sells")
+    if buys is None and sells is None:
+        return None
+    return {"buys": int(buys or 0), "sells": int(sells or 0)}
+
+
+# --------------------------------------------------------------------------
+# Price history — the chart
+# --------------------------------------------------------------------------
+# GeckoTerminal network slugs, keyed by the chain id DexScreener reports.
+# "robinhood" is a live slug (geckoterminal.com/robinhood/pools/...); the rest
+# are GT's published names. A chain that is not in this map is reported as
+# unsupported rather than guessed at — a wrong slug returns somebody else's
+# candles, which is far worse than an empty chart.
+GT_NETWORKS: dict[str, str] = {
+    "robinhood": "robinhood",
+    "ethereum": "eth",
+    "base": "base",
+    "bsc": "bsc",
+    "arbitrum": "arbitrum",
+    "polygon": "polygon_pos",
+    "avalanche": "avax",
+    "optimism": "optimism",
+    "solana": "solana",
+}
+
+# range key -> (GT timeframe, aggregate, candle count, human label)
+RANGES: dict[str, tuple[str, int, int, str]] = {
+    "1d": ("hour", 1, 24, "24 hours · hourly"),
+    "7d": ("hour", 4, 42, "7 days · 4-hourly"),
+    "30d": ("day", 1, 30, "30 days · daily"),
+    "90d": ("day", 1, 90, "90 days · daily"),
+}
+DEFAULT_RANGE = "7d"
+
+
+class HistoryFeed(_Reader):
+    """OHLCV candles for the pool that is actually quoting the token.
+
+    The pool address comes from the live token snapshot rather than from a
+    second lookup, so the chart and the headline price are guaranteed to
+    describe the same market. A chart of one pool beside a price from another
+    is a lie that looks like a rounding error.
+    """
+
+    # History moves far more slowly than a spot quote, and GeckoTerminal
+    # throttles keyless callers, so this cache is deliberately long.
+    TTL = 300.0
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._cache: dict[str, _Cached] = {}
+
+    def snapshot(self, range_key: str = DEFAULT_RANGE) -> dict:
+        if range_key not in RANGES:
+            range_key = DEFAULT_RANGE
+        timeframe, aggregate, limit, label = RANGES[range_key]
+        base = {"range": range_key, "label": label, "candles": []}
+
+        tok = token_feed.snapshot()
+        if tok.get("status") != "live":
+            # No live quote means no pool to read candles from. Pass the
+            # token's own status through so the chart says the same thing the
+            # price card says, rather than inventing a second explanation.
+            return {
+                **base,
+                "status": tok.get("status", "dark"),
+                "detail": tok.get("detail") or "No live pool to chart yet.",
+            }
+
+        pool = tok.get("pool_address")
+        net = GT_NETWORKS.get(str(tok.get("chain") or "").lower())
+        if not pool:
+            return {**base, "status": "no_history", "detail": "The quoting pool has no address."}
+        if not net:
+            return {
+                **base,
+                "status": "unsupported_chain",
+                "detail": f"No candle source for chain {tok.get('chain')!r}.",
+            }
+
+        key = f"{net}/{pool}/{range_key}"
+        with self._lock:
+            hit = self._cache.get(key)
+            if hit and hit.age < self.TTL:
+                return {**base, **hit.payload, "stale_seconds": 0}
+
+            url = f"{GECKOTERMINAL}/networks/{net}/pools/{pool}/ohlcv/{timeframe}"
+            try:
+                resp = self._client.get(
+                    url,
+                    params={"limit": limit, "aggregate": aggregate, "currency": "usd"},
+                    headers={"accept": "application/json;version=20230302"},
+                )
+                resp.raise_for_status()
+                rows = (((resp.json() or {}).get("data") or {}).get("attributes") or {}).get(
+                    "ohlcv_list"
+                ) or []
+            except Exception as exc:  # noqa: BLE001 — degrade, never raise
+                logger.warning("history fetch failed: %s", exc)
+                if hit:
+                    return {**base, **hit.payload, "stale_seconds": int(hit.age)}
+                return {**base, "status": "dark", "detail": "Candle source unreachable."}
+
+            # GT returns newest-first; a chart drawn in that order runs
+            # backwards through time and nobody notices until the trend reads
+            # inverted. Sort explicitly rather than trusting the order.
+            candles = []
+            for row in sorted(rows, key=lambda r: r[0]):
+                try:
+                    candles.append(
+                        {
+                            "t": int(row[0]),
+                            "o": float(row[1]),
+                            "h": float(row[2]),
+                            "l": float(row[3]),
+                            "c": float(row[4]),
+                            "v": float(row[5]),
+                        }
+                    )
+                except (IndexError, TypeError, ValueError):
+                    continue  # one malformed row must not lose the series
+
+            if len(candles) < 2:
+                # One point is not a line. Say the pool is too new instead of
+                # drawing a chart that implies a trend from a single dot.
+                return {
+                    **base,
+                    "status": "no_history",
+                    "detail": "This pool has no candle history yet — too new to chart.",
+                }
+
+            payload = {"status": "live", "candles": candles, "source": "GeckoTerminal"}
+            self._cache[key] = _Cached(payload=payload, fetched_at=time.time())
+            return {**base, **payload, "stale_seconds": 0}
+
+
 token_feed = TokenFeed()
 majors_feed = MajorsFeed()
+history_feed = HistoryFeed()

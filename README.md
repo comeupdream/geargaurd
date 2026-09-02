@@ -139,9 +139,93 @@ become a zero.
 
 ---
 
+## The token and the reward are two different things
+
+- **`$GARY` is the token you hold.** It is not a stock and confers no claim on
+  any equity.
+- **Tokenized RIVN on Robinhood Chain is what holders receive.** RIVN is named
+  on the page only to say what the reward is denominated in.
+
+Keeping those names distinct is deliberate. "Hold $RIVN, receive RIVN" was
+self-contradictory, and a ticker identical to the equity it pays out is exactly
+the confusion the footer then has to spend three paragraphs undoing. The two
+live in `TOKEN_SYMBOL` and `REWARD_ASSET` / `REWARD_NETWORK`.
+
+## Charts and metrics
+
+`GET /api/token/history?range=1d|7d|30d|90d` serves OHLCV candles from
+GeckoTerminal, read from **the same pool that produced the headline price** —
+the pool address is carried through from the quote rather than looked up
+again, so the chart and the number above it can never describe two different
+markets. An unknown `range` falls back to the default instead of erroring.
+
+Its statuses extend the token's own: `no_history` (pool exists, too new for
+candles) and `unsupported_chain` (no candle source mapped for that chain —
+reported rather than guessed, because a wrong network slug returns *somebody
+else's* candles, which is far worse than an empty chart).
+
+The frontend (`site/assets/js/charts.js`) draws price, volume and buy/sell
+flow as hand-rolled SVG. Rules that are load-bearing:
+
+- **Data ink is not deck chrome.** The series palette is a separate,
+  *validated* set (blue `#3987e5`, aqua `#199e70`, red `#e66767`) — checked
+  against the card surface for lightness band, chroma, normal-vision
+  separation and contrast. Deck yellow/green/blue are status and chrome; a
+  line on a chart must never be mistaken for a status light.
+- **The one WARN is mitigated, not ignored.** Aqua↔red sits in the CVD warn
+  band, which is legal *only* with secondary encoding — so the flow meter
+  always ships direct labels and a 2px gap. Those labels are not decoration.
+- **Never a dual axis.** Price and volume are stacked charts on one shared
+  x-axis. Two y-scales in one frame let the series be slid past each other
+  until any story you like appears.
+- **Pixel units, not a stretched viewBox.** `preserveAspectRatio="none"` is
+  fine for paths and fatal for text — it smears glyphs horizontally by a
+  different amount on every screen. The SVG is drawn at the container's
+  measured width so one unit is one CSS pixel.
+- **Every chart has a table twin.** A value that exists only inside a hover
+  tooltip is one keyboard and screen-reader users do not have.
+- **A declared scale on every meter.** The channel rows print their maximum
+  ($250K, $5M …), because a bar with an invisible ceiling is decoration that
+  looks like information. An unmeasured row shows an empty track, never a
+  zero-width bar — those look identical and mean opposite things.
+
 ## Design lineage
 
 Two sources, deliberately fused, and documented at the top of each file.
+
+Three repos, fused. The rule that keeps the fusion from becoming soup: **each
+lineage owns a different layer.** XAT owns the surface and the colour budget,
+Mnemonic 2047 owns the frame around content, MangoMatrix owns the readouts
+inside it. When two of them want the same element, the surface rule wins —
+that is what stops a HUD from turning into a gamer dashboard.
+
+**From Mnemonic 2047 (`comeupdream/HOFFMAN-TACTICAL`) — the chrome:**
+
+- **Corner brackets** (`.bracketed`), scoped to a card rather than the
+  viewport, drawn with two pseudo-elements so any box can wear them without
+  extra markup.
+- **A scanline film that flickers** (`.filmed`). A static scanline overlay
+  reads as a texture; one that stutters on a slow irregular cycle reads as a
+  live display. Three steps on a 7s loop — any faster is a strobe.
+- **A status lamp that pulses in exactly one state.** A lamp that animates
+  always is decoration; one that animates only when live is a signal you can
+  read across the room.
+- **A telemetry rail** under the header, carrying real readings or `--`. A
+  rail of decorative numbers is the fastest way to teach a visitor that
+  nothing on the page means anything.
+- **Orbitron** as the display face, spent only on the wordmark and the hero.
+  Used wider it turns every heading into signage and the page loses hierarchy.
+
+**From MangoMatrix LIVE (`comeupdream/dragonfruit-drive`) — the instrument
+panel:**
+
+- **Channel rows** — compact label / value / meter / scale rows, ported from
+  its layer rack. Magnitude visible without reading every number.
+- **A glow on live values only** (`.lit`). Spend it on static copy and it
+  stops meaning "this is moving".
+- **The JP micro-subtitle.** Both this and XAT independently reached for it,
+  which is why it earned a place; decorative only, `aria-hidden`, never
+  carrying meaning a reader needs.
 
 **From XAT Racing (`comeupdream/XATRACING`) — the discipline:**
 

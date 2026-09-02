@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GEAR GUARD GARY — $RIVN</title>
-<meta name="description" content="GEAR GUARD GARY ($RIVN) — an independent, gear-themed community token deck. Live readout, an interactive wireframe rig, and a stated posture: read-only, non-custodial, nothing signs here.">
+<title>GEAR GUARD GARY — $GARY</title>
+<meta name="description" content="GEAR GUARD GARY ($GARY) — an independent, gear-themed community token deck. Hold $GARY, receive tokenized RIVN on Robinhood Chain. Live price tape, an interactive wireframe rig, and a stated posture: read-only, non-custodial, nothing signs here.">
 <meta name="theme-color" content="#0a0e0c">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="GEAR GUARD GARY — $RIVN">
-<meta property="og:description" content="Gear-themed community token deck. Live readout, interactive wireframe rig, honest posture.">
+<meta property="og:title" content="GEAR GUARD GARY — $GARY">
+<meta property="og:description" content="Hold $GARY, receive tokenized RIVN on Robinhood Chain. Live price tape, interactive wireframe rig, honest posture.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/gg.css">
 </head>
 <body>
@@ -38,7 +38,7 @@
         <rect x="15" y="21.4" width="18" height="5.2" rx="2.6" fill="#ffd400"/>
       </svg>
       <b>GEAR GUARD <i>GARY</i></b>
-      <span class="tick">$RIVN</span>
+      <span class="tick">$GARY</span>
     </a>
     <nav>
       <a href="#guard">01 Guard</a>
@@ -50,8 +50,23 @@
   </div>
 </header>
 
+<!-- Telemetry strip — Mnemonic's header stat bar, carrying real values only.
+     Every field here is populated from the live feed or reads "--"; a
+     telemetry rail of decorative numbers is the fastest way to teach someone
+     that nothing on the page means anything. -->
+<div class="telemetry mono" aria-label="Live telemetry">
+  <div class="wrap">
+    <span><i>PRICE</i><b id="telPrice">--</b></span>
+    <span><i>24H</i><b id="tel24h">--</b></span>
+    <span><i>LIQ</i><b id="telLiq">--</b></span>
+    <span><i>VOL 24H</i><b id="telVol">--</b></span>
+    <span><i>CHAIN</i><b id="telChain">--</b></span>
+    <span class="tel-lamp"><span class="lamp" data-live data-state="idle">Connecting…</span></span>
+  </div>
+</div>
+
 <!-- ===================== hero ===================== -->
-<section class="hero" id="top">
+<section class="hero filmed" id="top">
   <div class="wrap">
     <div class="eyebrow">Independent community project · read-only deck</div>
     <h1>Gear Guard<br><em>Gary</em></h1>
@@ -73,7 +88,7 @@
            IS the EIP-55 checksum, so lower-casing it to look tidier would throw
            away the one thing that catches a mistyped or swapped address. -->
       <div class="panel-lite">
-        <div class="panel-k">Contract address · $RIVN</div>
+        <div class="panel-k">Contract address · $GARY</div>
         <button type="button" class="ca-row" id="caCopy"
                 aria-label="Copy the contract address to the clipboard">
           <code id="caText">0x401923511EC7356AeC6b7717207394feA97CEa01</code>
@@ -91,7 +106,7 @@
       <div class="panel-lite">
         <div class="panel-k">Holder rewards</div>
         <p class="rw-lede">
-          Hold <b>$RIVN</b>, receive <b class="rw-hit">tokenized RIVN stock</b>
+          Hold <b>$GARY</b>, receive <b class="rw-hit">tokenized RIVN stock</b>
           on Robinhood Chain.
         </p>
         <ul class="rw-list">
@@ -109,7 +124,9 @@
       </div>
     </div>
 
-    <div class="rows mono" id="majors" style="display:flex;gap:22px;flex-wrap:wrap;margin-top:26px;color:var(--gg-muted);font-size:11.5px">
+    <!-- Context majors. Its own class rather than a borrowed `.rows`, which
+         is a stacked spec list and painted an underline under every item. -->
+    <div class="majors mono" id="majors" aria-label="Reference market prices">
       <span class="r"><span>ORACLE</span><b>—</b></span>
     </div>
   </div>
@@ -121,7 +138,7 @@
 <section id="guard">
   <div class="wrap">
     <span class="livery" aria-hidden="true" data-n="01">01</span>
-    <div class="sec-head"><h2>The Guard</h2><span class="sub">What Gary actually does</span></div>
+    <div class="sec-head"><h2>The Guard</h2><span class="sub">What Gary actually does</span><em class="jp" aria-hidden="true">番人</em></div>
     <hr class="horizon">
     <div class="grid g3">
       <div class="card"><div class="teeth"></div>
@@ -167,13 +184,13 @@
 <section id="rig" style="padding-bottom:0">
   <div class="wrap">
     <span class="livery" aria-hidden="true" data-n="02">02</span>
-    <div class="sec-head"><h2>The Rig</h2><span class="sub">Three-row electric SUV · pure math</span></div>
+    <div class="sec-head"><h2>The Rig</h2><span class="sub">Three-row electric SUV · pure math</span><em class="jp" aria-hidden="true">車体</em></div>
     <hr class="horizon">
   </div>
   <div class="rig-stage" id="rigStage">
     <div class="rig-sticky">
       <div class="wrap">
-        <div class="rig">
+        <div class="rig filmed bracketed">
           <canvas id="rig-wire" aria-label="Interactive wireframe electric SUV — drag to rotate, scroll to field-strip, tap a part to read its dossier"></canvas>
           <div class="rig-hud">GG_RIG_ASSY · quad motor · no images, no libraries</div>
           <div id="rigLabel">// ASSEMBLY — INTACT</div>
@@ -208,7 +225,7 @@
 <section id="drivetrain">
   <div class="wrap">
     <span class="livery" aria-hidden="true" data-n="03">03</span>
-    <div class="sec-head"><h2>Drivetrain</h2><span class="sub">Where the supply goes</span></div>
+    <div class="sec-head"><h2>Drivetrain</h2><span class="sub">Where the supply goes</span><em class="jp" aria-hidden="true">駆動系</em></div>
     <hr class="horizon">
     <div class="grid g2">
       <div class="card"><div class="teeth"></div>
@@ -230,7 +247,7 @@
       <div class="card"><div class="teeth"></div>
         <h3>Spec plate</h3>
         <div class="rows">
-          <div class="r"><span>TICKER</span><b>$RIVN</b></div>
+          <div class="r"><span>TICKER</span><b>$GARY</b></div>
           <div class="r"><span>CHAIN</span><b id="tokChainRow">—</b></div>
           <div class="r"><span>CONTRACT</span><b id="tokContract" style="word-break:break-all;font-size:10.5px">not set</b></div>
           <div class="r"><span>BUY / SELL TAX</span><b>0% / 0%</b></div>
@@ -254,7 +271,7 @@
 <section id="charge">
   <div class="wrap">
     <span class="livery" aria-hidden="true" data-n="04">04</span>
-    <div class="sec-head"><h2>Charge</h2><span class="sub">Live readout</span></div>
+    <div class="sec-head"><h2>Charge</h2><span class="sub">Live readout</span><em class="jp" aria-hidden="true">充電</em></div>
     <hr class="horizon">
     <div class="grid g3">
       <div class="card stat"><div class="teeth"></div>
@@ -271,17 +288,45 @@
       </div>
     </div>
 
-    <div class="card" style="margin-top:14px"><div class="teeth"></div>
-      <h3>Charge cluster</h3>
-      <div class="gauges">
-        <div class="gauge" id="gDepth"><div class="dial"></div><div class="k">Pool depth · scale $250K</div></div>
-        <div class="gauge" id="gVol"><div class="dial"></div><div class="k">24h volume · scale $500K</div></div>
-        <div class="gauge" id="gMom"><div class="dial"></div><div class="k">Momentum · ±25%</div></div>
+    <!-- The tape. Price and volume share ONE x-axis as stacked charts —
+         never a dual-axis frame, which would let the two series be slid past
+         each other until any story you like appears. -->
+    <div class="card bracketed" style="margin-top:14px"><div class="teeth"></div>
+      <div class="chart-head">
+        <h3>Price tape<em class="jp">価格</em></h3>
+        <div class="range-row mono" id="rangeRow" role="group" aria-label="Chart time range">
+          <button type="button" data-range="1d">1D</button>
+          <button type="button" data-range="7d" class="on">7D</button>
+          <button type="button" data-range="30d">30D</button>
+          <button type="button" data-range="90d">90D</button>
+        </div>
       </div>
-      <p class="mono" id="tokStatus" style="margin-top:16px;font-size:11.5px;letter-spacing:.04em">
+      <div class="chart-host" id="priceChart"></div>
+      <p class="chart-src mono" id="chartSrc">Waiting for candles…</p>
+    </div>
+
+    <!-- Metrics. Channel rows rather than a wall of tiles: each carries its
+         own meter, so magnitude is visible without reading every number. -->
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card"><div class="teeth"></div>
+        <h3>Pool telemetry<em class="jp">流動性</em></h3>
+        <div class="chan" id="chanRows"></div>
+      </div>
+      <div class="card"><div class="teeth"></div>
+        <h3>Flow · 24h<em class="jp">売買</em></h3>
+        <div class="flow" id="flowMeter"></div>
+        <div class="gauges" style="margin-top:18px">
+          <div class="gauge" id="gDepth"><div class="dial"></div><div class="k">Pool depth · scale $250K</div></div>
+          <div class="gauge" id="gMom"><div class="dial"></div><div class="k">Momentum · ±25%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px"><div class="teeth"></div>
+      <p class="mono" id="tokStatus" style="font-size:11.5px;letter-spacing:.04em;margin:0">
         Waiting for the readout service…
       </p>
-      <p style="margin-top:10px"><a id="tokPairLink" class="mono" hidden href="#" rel="noopener" target="_blank" style="font-size:11px;letter-spacing:.12em;color:var(--gg-alloy)">OPEN THE POOL ON THE DEX →</a></p>
+      <p style="margin:10px 0 0"><a id="tokPairLink" class="mono" hidden href="#" rel="noopener" target="_blank" style="font-size:11px;letter-spacing:.12em;color:var(--gg-alloy)">OPEN THE POOL ON THE DEX →</a></p>
     </div>
   </div>
 </section>
@@ -290,7 +335,7 @@
 <section id="trail">
   <div class="wrap">
     <span class="livery" aria-hidden="true" data-n="05">05</span>
-    <div class="sec-head"><h2>The Trail</h2><span class="sub">Honest phases, no promises</span></div>
+    <div class="sec-head"><h2>The Trail</h2><span class="sub">Honest phases, no promises</span><em class="jp" aria-hidden="true">軌跡</em></div>
     <hr class="horizon">
     <div class="trail">
       <div class="leg" data-state="done">
@@ -349,10 +394,11 @@
         named here only to say which network the holder reward is denominated
         on. Nothing on this page is issued, endorsed, processed or reviewed by
         Robinhood.</p>
-        <p><b>The $RIVN token is not a stock.</b> Buying it is not buying shares
+        <p><b>The $GARY token is not a stock.</b> Buying it is not buying shares
         in a car company: the token itself confers no ownership of, and no
-        claim on, the RIVN equity listed on NASDAQ. If shares are what you
-        came for, close this page and use a broker.</p>
+        claim on, the RIVN equity listed on NASDAQ. RIVN is named on this page
+        only to describe what the holder reward is denominated in. If shares
+        are what you came for, close this page and use a broker.</p>
         <p><b>The holder reward is a stated mechanism, not a verified fact.</b>
         Distribution of tokenized RIVN to holders is the project's declared
         intention and has the same standing as every “at launch” row on the
@@ -374,7 +420,11 @@
 
 <script src="config.js"></script>
 <script src="assets/js/enhance.js" defer></script>
+<script src="assets/js/charts.js" defer></script>
 <script src="assets/js/gary.js" defer></script>
+<!-- token.js last: it calls into GG.gauge (enhance) and GG.priceChart
+     (charts), so both must have registered on window.GG first. defer keeps
+     them in document order. -->
 <script src="assets/js/token.js" defer></script>
 </body>
 </html>

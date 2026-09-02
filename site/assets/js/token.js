@@ -110,8 +110,10 @@ function paintToken(tok, limits) {
     setText('tok24h', '--', 'v dim');
     setText('tokStatus', tok.detail || STATUS_TEXT[status] || 'No quote available.');
     window.GG.gauge($('gDepth'), null, '--', '#8fa099');
-    window.GG.gauge($('gVol'), null, '--', '#8fa099');
     window.GG.gauge($('gMom'), null, '--', '#8fa099');
+    paintChannels(null);
+    window.GG.flowMeter($('flowMeter'), null);
+    paintTelemetry(tok, false);
     return;
   }
 
@@ -128,17 +130,72 @@ function paintToken(tok, limits) {
 
   /* Gauge ceilings are DISPLAY scales, declared here and stated on the label.
    * A gauge whose maximum is invisible tells you nothing about the value. */
-  var depthMax = 250000, volMax = 500000;
+  var depthMax = 250000;
   window.GG.gauge($('gDepth'), (tok.liquidity_usd || 0) / depthMax, compact(tok.liquidity_usd), '#3fd98a');
-  window.GG.gauge($('gVol'), (tok.volume_24h_usd || 0) / volMax, compact(tok.volume_24h_usd), '#6ea8d8');
   /* Momentum is bidirectional, so it is mapped from -25%..+25% onto the dial
    * with the centre as flat, and the arc takes the sign's colour. */
   var m = typeof ch === 'number' ? ch : 0;
   window.GG.gauge($('gMom'), (Math.max(-25, Math.min(25, m)) + 25) / 50, pct(ch),
                   m < 0 ? '#ff5a4d' : '#ffd400');
 
+  paintChannels(tok);
+  window.GG.flowMeter($('flowMeter'), tok.txns_24h);
+  paintTelemetry(tok, live);
+
   var floorEl = $('tokFloor');
   if (floorEl && limits) floorEl.textContent = compact(limits.min_liquidity_usd);
+}
+
+/* The header telemetry rail. Every field is a real reading or "--" — a rail
+ * of decorative numbers is the fastest way to teach a visitor that nothing on
+ * the page means anything. The `lit` glow is applied only while the feed is
+ * live, so the glow itself carries the status. */
+function paintTelemetry(tok, live) {
+  var ch = tok && tok.change_24h_pct;
+  setText('telPrice', live ? money(tok.price_usd) : '--');
+  setText('tel24h', live ? pct(ch) : '--',
+          live && typeof ch === 'number' ? (ch < 0 ? 'down' : 'up') : '');
+  setText('telLiq', live ? compact(tok.liquidity_usd) : '--');
+  setText('telVol', live ? compact(tok.volume_24h_usd) : '--');
+  setText('telChain', (tok && tok.chain ? String(tok.chain) : '--').toUpperCase());
+  var p = $('telPrice');
+  if (p) p.classList.toggle('lit', !!live);
+}
+
+/* Channel rows: label, value, and a meter bar against a DECLARED scale. The
+ * scale is printed on the row, because a bar with an invisible maximum tells
+ * you nothing — it is decoration that looks like information. */
+var CHANNELS = [
+  { k: 'liquidity_usd',  label: 'Liquidity',   max: 250000, scale: '$250K' },
+  { k: 'volume_24h_usd', label: 'Volume 24h',  max: 500000, scale: '$500K' },
+  { k: 'volume_6h_usd',  label: 'Volume 6h',   max: 150000, scale: '$150K' },
+  { k: 'market_cap_usd', label: 'Market cap',  max: 5000000, scale: '$5M' },
+  { k: 'fdv_usd',        label: 'FDV',         max: 5000000, scale: '$5M' }
+];
+
+function paintChannels(tok) {
+  var host = $('chanRows');
+  if (!host) return;
+  host.textContent = '';
+  CHANNELS.forEach(function (c) {
+    var v = tok ? tok[c.k] : null;
+    var known = typeof v === 'number' && isFinite(v);
+    var row = document.createElement('div');
+    row.className = 'chan-row';
+    row.innerHTML =
+      '<span class="cr-k">' + c.label + '</span>' +
+      '<span class="cr-v">' + (known ? compact(v) : '--') + '</span>' +
+      '<span class="cr-bar"><i></i></span>' +
+      '<span class="cr-s">' + c.scale + '</span>';
+    /* Width set from script, not markup, so an unknown value renders an empty
+     * track rather than a zero-length bar that reads as a measured zero. */
+    if (known) {
+      row.querySelector('i').style.width = Math.max(1.5, Math.min(100, (v / c.max) * 100)) + '%';
+    } else {
+      row.classList.add('unknown');
+    }
+    host.appendChild(row);
+  });
 }
 
 function paintMajors(maj) {
@@ -156,6 +213,56 @@ function paintMajors(maj) {
   }).join('');
 }
 
+/* ---------------------------------------------------------------------------
+ * The chart
+ * ------------------------------------------------------------------------- */
+var range = '7d';
+/* Candles change far more slowly than a spot quote and the upstream throttles
+ * keyless callers, so history is fetched on its own slower schedule — not
+ * once per state poll. Switching range fetches immediately. */
+var HISTORY_MS = 300000;
+var lastHistory = null;
+
+function paintHistory(h) {
+  var host = $('priceChart');
+  if (!host) return;
+  lastHistory = h;
+  var live = h && h.status === 'live';
+  window.GG.priceChart(host, live ? h.candles : null, (h && h.range) || range,
+                       { detail: h && h.detail });
+  setText('chartSrc', live
+    ? (h.label + ' · ' + h.candles.length + ' candles · ' + (h.source || 'upstream') +
+       ', from the same pool as the price above' +
+       (h.stale_seconds > 0 ? ' · ' + Math.round(h.stale_seconds) + 's stale' : ''))
+    : (h && h.detail) || 'No candle history available.');
+}
+
+function loadHistory() {
+  if (!API) { paintHistory({ status: 'unset', detail: 'No backend configured for this deployment.' }); return; }
+  fetch(API + '/api/token/history?range=' + encodeURIComponent(range), { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(paintHistory)
+    .catch(function () {
+      paintHistory({ status: 'dark', detail: 'The readout service is not answering — no candles.' });
+    });
+}
+
+var rangeRow = $('rangeRow');
+if (rangeRow) {
+  rangeRow.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-range]');
+    if (!b || b.dataset.range === range) return;
+    range = b.dataset.range;
+    Array.prototype.forEach.call(rangeRow.children, function (c) {
+      c.classList.toggle('on', c === b);
+    });
+    loadHistory();
+  });
+}
+
+/* ---------------------------------------------------------------------------
+ * Polling
+ * ------------------------------------------------------------------------- */
 function tick() {
   if (!API) {
     /* No backend configured is its own honest state — not an error, and not
@@ -181,8 +288,21 @@ function tick() {
 }
 
 tick();
+loadHistory();
 setInterval(tick, POLL_MS);
+setInterval(loadHistory, HISTORY_MS);
 /* Coming back to a backgrounded tab should not show a five-minute-old price
  * for thirty seconds. */
 document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
+/* The chart is drawn into a viewBox that stretches with its container, but the
+ * tooltip maths and the label positions are computed from the rendered width —
+ * so a resize needs a redraw, not just a reflow. */
+/* Redrawn from the LAST PAYLOAD, never re-fetched: the upstream throttles
+ * keyless callers hard, and dragging a window edge would otherwise fire a
+ * burst of requests and take the chart dark for everyone. */
+var resizeT = null;
+addEventListener('resize', function () {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(function () { if (lastHistory) paintHistory(lastHistory); }, 250);
+}, { passive: true });
 })();

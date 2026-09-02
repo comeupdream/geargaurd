@@ -64,8 +64,12 @@ services:
       # inventing a price.
       - key: TOKEN_NAME
         value: "Gear Guard Gary"
+      # The token you HOLD is $GARY. The asset holders are PAID IN is tokenized
+      # RIVN (REWARD_ASSET below). Those two must stay different names: a
+      # ticker identical to the equity it pays out is the confusion the page
+      # footer then has to spend three paragraphs undoing.
       - key: TOKEN_SYMBOL
-        value: "RIVN"
+        value: "GARY"
       - key: TOKEN_CONTRACT
         value: "0x401923511EC7356AeC6b7717207394feA97CEa01"
       # A declared LABEL and a fallback only. The upstream looks a contract up
@@ -74,6 +78,16 @@ services:
       # string in the response.
       - key: TOKEN_CHAIN
         value: "robinhood"
+
+      # What holders receive, and where. Named here rather than only in the
+      # page so the two cannot drift. The chain slug above also selects the
+      # candle source for the price chart (see GT_NETWORKS in feeds.py); a
+      # chain with no mapping reports "unsupported_chain" and draws no chart
+      # rather than guessing a slug and charting somebody else's pool.
+      - key: REWARD_ASSET
+        value: "tokenized RIVN"
+      - key: REWARD_NETWORK
+        value: "Robinhood Chain"
 
       # A pool shallower than this is reported as too thin to quote rather
       # than printed. Raise it once the pool is real: the floor exists so a

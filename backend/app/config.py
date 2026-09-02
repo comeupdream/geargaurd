@@ -21,8 +21,19 @@ class Settings(BaseSettings):
     # and still the honest empty state: /api/token then answers status="unset"
     # and the deck renders "CONTRACT NOT SET" rather than inventing a price.
     token_name: str = "Gear Guard Gary"
-    token_symbol: str = "RIVN"
+    # The token you HOLD is $GARY. The asset holders are paid in is tokenized
+    # RIVN (reward_asset, below). Keeping those two names distinct is the whole
+    # point: "hold $RIVN, receive RIVN" was self-contradictory, and a ticker
+    # that matches the equity it pays out invites exactly the confusion the
+    # footer spends three paragraphs undoing.
+    token_symbol: str = "GARY"
     token_contract: str = "0x401923511EC7356AeC6b7717207394feA97CEa01"
+
+    # --- the holder reward ---------------------------------------------------
+    # What holders receive, and where. Named here rather than hard-coded in the
+    # page so the two cannot drift.
+    reward_asset: str = "tokenized RIVN"
+    reward_network: str = "Robinhood Chain"
 
     # A DECLARED label only, and a fallback at that. The DexScreener token
     # endpoint looks a contract up across every chain it indexes, so nothing
